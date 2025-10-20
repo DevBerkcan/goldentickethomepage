@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
-import { Mail, MapPin, Phone, Ticket, ChevronRight, Check, AlertCircle, Trophy, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronRight, AlertCircle } from "lucide-react";
 import { useState, useRef } from "react";
 
 interface FormData {
@@ -44,7 +44,6 @@ export default function GoldenTicketPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [consent, setConsent] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
   const submittedRef = useRef(false);
 
   const getUTMParameter = (param: string): string | null => {
@@ -127,38 +126,21 @@ export default function GoldenTicketPage() {
     }
   };
 
-  const Snowflake = ({ delay, index }: { delay: number; index: number }) => (
-    <motion.div
-      className="absolute text-2xl pointer-events-none opacity-60"
-      style={{ left: `${(index * 7) % 100}%` }}
-      initial={{ y: -50 }}
-      animate={{ y: 1000, rotate: 360 }}
-      transition={{ duration: 15 + Math.random() * 10, repeat: Infinity, delay, ease: "linear" }}
-    >
-      ❄️
-    </motion.div>
-  );
-
   // CONFIRMATION SCREEN
   if (step === "confirmation") {
     return (
-      <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500 px-4 py-8">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center max-w-2xl mx-auto">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-2xl border-4 border-green-400 mx-auto mb-6">
-            <Check className="w-16 h-16 text-green-600" strokeWidth={3} />
-          </motion.div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 px-4">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center max-w-2xl">
+          <div className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+            <span className="text-6xl">✓</span>
+          </div>
           <h1 className="text-5xl font-black text-white mb-4">GLÜCKWUNSCH!</h1>
           <p className="text-2xl text-white mb-8">Du bist jetzt offiziell dabei! 🎫</p>
-          <div className="bg-white/20 backdrop-blur-xl p-8 rounded-3xl mb-8">
-            <div className="space-y-4 text-white text-lg">
-              <p>✅ Dein Code wurde registriert</p>
-              <p>📧 Bestätigung an {formData.email}</p>
-              <p>🏆 350+ Gewinnchancen aktiviert</p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl mb-8 text-white text-lg space-y-3">
+            <p>✅ Dein Code wurde registriert</p>
+            <p>📧 Bestätigung an {formData.email}</p>
+            <p>🏆 350+ Gewinnchancen aktiviert</p>
           </div>
-          <a href="https://tiktok.com/@sweetsausallerwelt" target="_blank" className="inline-block bg-white text-blue-600 font-bold py-4 px-8 rounded-2xl hover:scale-105 transition-transform">
-            Jetzt auf TikTok folgen →
-          </a>
         </motion.div>
       </div>
     );
@@ -167,11 +149,13 @@ export default function GoldenTicketPage() {
   // CONTACT FORM
   if (step === "contact") {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-blue-700 via-indigo-700 to-purple-600 px-4 py-12">
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 px-4 py-12">
         <div className="container mx-auto max-w-2xl">
-          <div className="bg-white/15 backdrop-blur-xl p-8 rounded-3xl border-2 border-white/30">
+          <div className="bg-white/10 backdrop-blur-2xl p-8 rounded-3xl border border-white/20">
             <h2 className="text-3xl font-black text-white mb-2 text-center">Deine Kontaktdaten</h2>
-            <p className="text-blue-200 text-center mb-6">Wir senden dir eine Benachrichtigung, sobald du gewonnen hast. Trage jetzt deine Kontaktdaten ein und erhalte deinen Gewinn direkt zu dir nach Hause.</p>
+            <p className="text-blue-200 text-center mb-6">
+              Wir senden dir eine Benachrichtigung, sobald du gewonnen hast. Trage jetzt deine Kontaktdaten ein und erhalte deinen Gewinn direkt zu dir nach Hause.
+            </p>
             
             <div className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -181,7 +165,7 @@ export default function GoldenTicketPage() {
                     value={formData.firstName}
                     onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                     placeholder="Vorname *"
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border-2 border-blue-300 text-white placeholder:text-white/60"
+                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
                   />
                   {errors.firstName && <p className="text-red-300 text-sm mt-1">{errors.firstName}</p>}
                 </div>
@@ -191,7 +175,7 @@ export default function GoldenTicketPage() {
                     value={formData.lastName}
                     onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                     placeholder="Nachname *"
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border-2 border-blue-300 text-white placeholder:text-white/60"
+                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
                   />
                   {errors.lastName && <p className="text-red-300 text-sm mt-1">{errors.lastName}</p>}
                 </div>
@@ -202,27 +186,27 @@ export default function GoldenTicketPage() {
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 placeholder="E-Mail *"
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border-2 border-blue-300 text-white placeholder:text-white/60"
+                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
               />
-              {errors.email && <p className="text-red-300 text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p className="text-red-300 text-sm">{errors.email}</p>}
 
               <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 placeholder="Handynummer *"
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border-2 border-blue-300 text-white placeholder:text-white/60"
+                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
               />
-              {errors.phone && <p className="text-red-300 text-sm mt-1">{errors.phone}</p>}
+              {errors.phone && <p className="text-red-300 text-sm">{errors.phone}</p>}
 
               <input
                 type="text"
                 value={formData.street}
                 onChange={(e) => setFormData({...formData, street: e.target.value})}
                 placeholder="Straße und Hausnummer *"
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border-2 border-blue-300 text-white placeholder:text-white/60"
+                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
               />
-              {errors.street && <p className="text-red-300 text-sm mt-1">{errors.street}</p>}
+              {errors.street && <p className="text-red-300 text-sm">{errors.street}</p>}
 
               <div className="grid grid-cols-3 gap-4">
                 <input
@@ -230,33 +214,33 @@ export default function GoldenTicketPage() {
                   value={formData.postalCode}
                   onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
                   placeholder="PLZ *"
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border-2 border-blue-300 text-white placeholder:text-white/60"
+                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
                 />
                 <input
                   type="text"
                   value={formData.city}
                   onChange={(e) => setFormData({...formData, city: e.target.value})}
                   placeholder="Stadt *"
-                  className="col-span-2 w-full px-4 py-3 rounded-xl bg-white/10 border-2 border-blue-300 text-white placeholder:text-white/60"
+                  className="col-span-2 w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
                 />
               </div>
 
               <select
                 value={formData.country}
                 onChange={(e) => setFormData({...formData, country: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border-2 border-blue-300 text-white"
+                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
               >
-                <option value="DE">🇩🇪 Deutschland</option>
-                <option value="AT">🇦🇹 Österreich</option>
-                <option value="CH">🇨🇭 Schweiz</option>
+                <option value="DE" className="bg-gray-900">🇩🇪 Deutschland</option>
+                <option value="AT" className="bg-gray-900">🇦🇹 Österreich</option>
+                <option value="CH" className="bg-gray-900">🇨🇭 Schweiz</option>
               </select>
 
-              <label className="flex items-start gap-3 text-white text-sm">
+              <label className="flex items-start gap-3 text-white text-sm cursor-pointer">
                 <input
                   type="checkbox"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
-                  className="mt-1 w-5 h-5"
+                  className="mt-1 w-5 h-5 rounded"
                 />
                 <span>Ich willige ein, am Gewinnspiel teilzunehmen und akzeptiere die Datenschutzerklärung. *</span>
               </label>
@@ -266,7 +250,7 @@ export default function GoldenTicketPage() {
                 onClick={handleContactSubmit}
                 disabled={isLoading || !consent}
                 whileHover={{ scale: isLoading || !consent ? 1 : 1.02 }}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black py-4 rounded-2xl disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-black py-4 rounded-2xl disabled:opacity-50 shadow-2xl text-lg"
               >
                 {isLoading ? "Wird registriert..." : "JETZT TEILNEHMEN →"}
               </motion.button>
@@ -277,196 +261,123 @@ export default function GoldenTicketPage() {
     );
   }
 
-  // CODE EINGABE - HAUPTSEITE
+  // HAUPTSEITE - CODE EINGABE
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-700 via-indigo-700 to-purple-600 overflow-hidden">
-      {/* Snowfall */}
-      {!prefersReducedMotion && (
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(15)].map((_, i) => (
-            <Snowflake key={i} delay={i * 1.2} index={i} />
-          ))}
-        </div>
-      )}
+    <div 
+      className="min-h-screen relative flex items-center justify-center"
+      style={{
+        backgroundImage: "url('/calender-background.jpg')", 
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Dunkler Overlay für bessere Lesbarkeit */}
+      <div className="absolute inset-0 bg-black/20"></div>
 
-      {/* Header mit Logo */}
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 py-6"
+      {/* CODE EINGABE - Freischwebend in der Mitte */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-xl mx-4"
       >
-        <div className="container mx-auto px-4 flex justify-center">
-          <div className="bg-white rounded-3xl p-4 shadow-2xl border-4 border-blue-300">
-            <img 
-              src="/sweets_transparency.svg" 
-              alt="Sweets aus aller Welt" 
-              className="h-16 w-auto"
-            />
+        
+        {/* Transparent/Glassmorphism Style - KEIN harter Kasten */}
+        <div className="relative">
+          
+          {/* Code Eingabe Feld */}
+          <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <input
+                type="text"
+                value={formData.ticketCode}
+                onChange={(e) => {
+                  setFormData({...formData, ticketCode: e.target.value.toUpperCase()});
+                  setErrors({});
+                }}
+                placeholder="GEWINN-CODE"
+                maxLength={8}
+                className="w-full px-8 py-6 text-4xl font-bold tracking-[0.5em] text-center bg-white/95 backdrop-blur-md rounded-2xl focus:outline-none focus:ring-4 focus:ring-yellow-400/50 transition-all text-gray-900 uppercase placeholder:text-gray-400 shadow-2xl border-4 border-yellow-400/50"
+                style={{
+                  textShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                }}
+              />
+              <div className="text-center mt-2 text-white text-sm font-bold drop-shadow-lg">
+                {formData.ticketCode.length}/8 Zeichen
+              </div>
+            </motion.div>
+
+            <AnimatePresence>
+              {errors.ticketCode && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="bg-red-500/90 backdrop-blur-md text-white p-4 rounded-xl flex items-center gap-2 shadow-xl"
+                >
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-bold">{errors.ticketCode}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <motion.button
+              onClick={handleCodeSubmit}
+              disabled={isLoading}
+              whileHover={{ scale: isLoading ? 1 : 1.05 }}
+              whileTap={{ scale: isLoading ? 1 : 0.95 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="w-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 text-black font-black py-5 px-8 rounded-2xl shadow-2xl hover:shadow-3xl transition-all disabled:opacity-50 text-2xl border-4 border-yellow-300"
+              style={{
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+              }}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-3 border-black border-t-transparent" />
+                  Prüfe...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-3">
+                  CODE EINLÖSEN
+                  <ChevronRight className="w-7 h-7" />
+                </span>
+              )}
+            </motion.button>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-center text-white text-sm font-bold drop-shadow-lg bg-black/40 backdrop-blur-sm py-2 px-4 rounded-full inline-block mx-auto"
+            >
+              8-stelliger Code mit Buchstaben & Zahlen
+            </motion.p>
           </div>
         </div>
-      </motion.header>
+      </motion.div>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          
-          {/* Golden Ticket Bild - Schräg positioniert */}
-          <motion.div
-            initial={{ opacity: 0, x: -100, rotate: -15 }}
-            animate={{ opacity: 1, x: 0, rotate: -12 }}
-            transition={{ delay: 0.3 }}
-            className="absolute left-4 md:left-12 top-32 w-48 md:w-64 hidden lg:block"
-          >
-            <img 
-              src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400" 
-              alt="Golden Ticket" 
-              className="w-full rounded-2xl shadow-2xl border-4 border-yellow-400 transform rotate-[-12deg]"
-            />
-          </motion.div>
-
-          {/* Haupttitel */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
-          >
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-6 py-2 rounded-full font-bold text-lg mb-4 shadow-lg">
-              <Sparkles className="w-5 h-5" />
-              GOLDEN TICKET
-            </div>
-            <h1 className="text-5xl md:text-6xl font-black text-white mb-2">
-              350+ GEWINNE
-            </h1>
-            <p className="text-2xl text-blue-100">
-              Im Wert von über <span className="text-yellow-300 font-bold">€15.000</span>
-            </p>
-          </motion.div>
-
-          {/* CODE EINGABE - ZENTRAL */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="max-w-2xl mx-auto mb-12"
-          >
-            <div className="bg-white/20 backdrop-blur-xl p-8 md:p-12 rounded-3xl shadow-2xl border-4 border-white/40">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
-                  <Ticket className="w-10 h-10 text-white" />
-                </div>
-                <h2 className="text-3xl font-black text-white mb-2">Gib deinen Code ein</h2>
-                <p className="text-blue-100 text-lg">8-stelliger Code (Buchstaben & Zahlen)</p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={formData.ticketCode}
-                    onChange={(e) => {
-                      setFormData({...formData, ticketCode: e.target.value.toUpperCase()});
-                      setErrors({});
-                    }}
-                    placeholder="ABC12345"
-                    maxLength={8}
-                    className="w-full px-6 py-5 text-3xl font-mono tracking-[0.4em] text-center border-4 border-blue-300 bg-white/90 rounded-2xl focus:border-yellow-400 focus:outline-none focus:ring-4 focus:ring-yellow-400/30 transition-all text-gray-800 uppercase placeholder:text-gray-400"
-                  />
-                  <div className="absolute right-6 top-1/2 -translate-y-1/2 text-blue-600 text-lg font-bold">
-                    {formData.ticketCode.length}/8
-                  </div>
-                </div>
-
-                <AnimatePresence>
-                  {errors.ticketCode && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center gap-2 text-red-200 bg-red-500/30 p-4 rounded-xl border-2 border-red-400"
-                    >
-                      <AlertCircle className="w-5 h-5" />
-                      <span className="font-bold">{errors.ticketCode}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <motion.button
-                  onClick={handleCodeSubmit}
-                  disabled={isLoading}
-                  whileHover={{ scale: isLoading ? 1 : 1.03 }}
-                  whileTap={{ scale: isLoading ? 1 : 0.97 }}
-                  className="w-full bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 text-white font-black py-5 px-6 rounded-2xl shadow-2xl hover:shadow-3xl transition-all disabled:opacity-50 text-xl"
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center gap-3">
-                      <div className="animate-spin rounded-full h-6 w-6 border-3 border-white border-t-transparent" />
-                      Prüfe Code...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-3">
-                      CODE EINLÖSEN
-                      <ChevronRight className="w-6 h-6" />
-                    </span>
-                  )}
-                </motion.button>
-
-                <p className="text-blue-100 text-center text-sm mt-4">
-                  ✓ Kostenlos  ✓ Sicher  ✓ Garantiert
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* GEWINNE - 4 Bilder nebeneinander */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="max-w-5xl mx-auto"
-          >
-            <h3 className="text-2xl font-black text-white text-center mb-6">
-              Das kannst du gewinnen:
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { img: "https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=300", name: "Nintendo Switch 2", value: "€399" },
-                { img: "https://images.unsplash.com/photo-1606400082777-ef05f3c5cde2?w=300", name: "AirPods Pro", value: "3x" },
-                { img: "https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?w=300", name: "PlayStation 5", value: "€549" },
-                { img: "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=300", name: "Asia Sweets Box", value: "350x" }
-              ].map((prize, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + idx * 0.1 }}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  className="bg-white/20 backdrop-blur-md rounded-2xl p-3 border-2 border-white/30 hover:border-yellow-400 transition-all"
-                >
-                  <div className="aspect-square rounded-xl overflow-hidden mb-3">
-                    <img src={prize.img} alt={prize.name} className="w-full h-full object-cover" />
-                  </div>
-                  <h4 className="text-white font-bold text-center text-sm mb-1">{prize.name}</h4>
-                  <p className="text-yellow-300 text-center text-xs font-bold">{prize.value}</p>
-                  <Trophy className="w-5 h-5 text-yellow-400 mx-auto mt-2" />
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Footer Text */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="text-center mt-12 text-blue-200 text-sm"
-          >
-            <p className="mb-2">Mit der Teilnahme stimmst du der Speicherung deiner Daten zur Gewinnabwicklung zu.</p>
-            <a href="/datenschutz" className="text-yellow-300 underline hover:text-yellow-200 font-bold">
-              Datenschutzerklärung
-            </a>
-          </motion.div>
-
-        </div>
-      </div>
+      {/* Footer Info */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7 }}
+        className="absolute bottom-8 left-0 right-0 text-center z-10"
+      >
+        <p className="text-white text-sm drop-shadow-lg bg-black/40 backdrop-blur-sm py-2 px-6 rounded-full inline-block">
+          Mit der Teilnahme stimmst du der Speicherung deiner Daten zu · 
+          <a href="/datenschutz" className="underline ml-1 font-bold hover:text-yellow-300 transition-colors">
+            Datenschutz
+          </a>
+        </p>
+      </motion.div>
     </div>
   );
 }
