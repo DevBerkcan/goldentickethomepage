@@ -38,7 +38,6 @@ const Snowflake = ({ delay, index }: { delay: number; index: number }) => {
 
   if (vh === null) return null;
 
-  // leichte Zufallsverteilung in X-Richtung über left%
   const leftPercent = ((index * 5) + Math.random() * 5) % 100;
 
   return (
@@ -77,6 +76,29 @@ export default function GoldenTicketPage() {
   const [consent, setConsent] = useState(false);
   const submittedRef = useRef(false);
 
+  const getUTMParameter = (param: string): string | null => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get(param);
+  };
+
+  // KORRIGIERT: Diese Funktion ruft jetzt deine API Route auf
+  const callGoldenTicketAPI = async (data: any) => {
+    return fetch("/api/golden-ticket", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...data,
+        source: "golden_ticket",
+        offer: "Adventskalender 2024",
+        utm_source: getUTMParameter("utm_source") || "direct",
+        utm_medium: getUTMParameter("utm_medium") || "organic",
+        utm_campaign: getUTMParameter("utm_campaign") || "golden_ticket",
+        consent: true,
+        consentTs: new Date().toISOString(),
+      }),
+    });
+  };
+
   const handleCodeSubmit = async () => {
     if (isLoading || submittedRef.current) return;
     const newErrors: FormErrors = {};
@@ -103,6 +125,7 @@ export default function GoldenTicketPage() {
     }
   };
 
+  // KORRIGIERT: Diese Funktion ruft jetzt die API auf
   const handleContactSubmit = async () => {
     if (isLoading || submittedRef.current) return;
     const newErrors: FormErrors = {};
@@ -125,12 +148,17 @@ export default function GoldenTicketPage() {
     try {
       submittedRef.current = true;
       
-      // Hier würdest du normalerweise Google Sheets anbinden
-      // Für jetzt gehen wir direkt zur Bestätigungsseite
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // WICHTIG: Hier wird die API aufgerufen
+      const res = await callGoldenTicketAPI(formData);
+      const result = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(result.message || "Registrierung fehlgeschlagen");
+      }
+      
       setStep("confirmation");
-    } catch (error) {
-      setErrors({ consent: "Ein Fehler ist aufgetreten." });
+    } catch (error: any) {
+      setErrors({ consent: error.message || "Ein Fehler ist aufgetreten." });
     } finally {
       setIsLoading(false);
       submittedRef.current = false;
