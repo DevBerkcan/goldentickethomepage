@@ -77,28 +77,6 @@ export default function GoldenTicketPage() {
   const [consent, setConsent] = useState(false);
   const submittedRef = useRef(false);
 
-  const getUTMParameter = (param: string): string | null => {
-    if (typeof window === "undefined") return null;
-    return new URLSearchParams(window.location.search).get(param);
-  };
-
-  const callGoldenTicketAPI = async (data: any) => {
-    return fetch("/api/golden-ticket", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...data,
-        source: "golden_ticket",
-        offer: "Adventskalender 2024",
-        utm_source: getUTMParameter("utm_source") || "direct",
-        utm_medium: getUTMParameter("utm_medium") || "organic",
-        utm_campaign: getUTMParameter("utm_campaign") || "golden_ticket",
-        consent: true,
-        consentTs: new Date().toISOString(),
-      }),
-    });
-  };
-
   const handleCodeSubmit = async () => {
     if (isLoading || submittedRef.current) return;
     const newErrors: FormErrors = {};
@@ -146,8 +124,10 @@ export default function GoldenTicketPage() {
     setErrors({});
     try {
       submittedRef.current = true;
-      const res = await callGoldenTicketAPI(formData);
-      if (!res.ok) throw new Error("Registrierung fehlgeschlagen");
+      
+      // Hier würdest du normalerweise Google Sheets anbinden
+      // Für jetzt gehen wir direkt zur Bestätigungsseite
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       setStep("confirmation");
     } catch (error) {
       setErrors({ consent: "Ein Fehler ist aufgetreten." });
@@ -340,7 +320,7 @@ export default function GoldenTicketPage() {
               "
             >
               <img
-                src="/goldenes ticket.png"
+                src="/goldenes-ticket.png"
                 alt="Golden Ticket"
                 className="w-full h-auto rounded-xl lg:rounded-2xl"
               />
