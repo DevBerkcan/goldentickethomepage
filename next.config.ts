@@ -1,7 +1,11 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Deaktiviere Turbopack für Production Build
+  experimental: {
+    turbo: undefined
+  },
+  // Erhöhe Timeout
+  staticPageGenerationTimeout: 300,
+}
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
+module.exports = nextConfig

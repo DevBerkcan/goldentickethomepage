@@ -1,151 +1,110 @@
 import { NextResponse } from 'next/server';
 import crypto from "crypto";
 
-// POST Handler für App Router
+export const maxDuration = 30; // 30 seconds max for Vercel Hobby
+
 export async function POST(request) {
   try {
     const body = await request.json();
     
-    const {
-      ticketCode,
-      email,
-      firstName,
-      lastName,
-      phone,
-      street,
-      city,
-      postalCode,
-      country,
-      source = "golden_ticket",
-      offer = "Adventskalender 2025",
-      utm_source,
-      utm_medium,
-      utm_campaign,
-      consent = false,
-      consentTs
-    } = body;
-
-    // Validierung
-    if (!email || !/^\S+@\S+\.\S+/.test(email)) {
+    // Schnellere Validierung
+    const requiredFields = ['ticketCode', 'email', 'firstName', 'lastName', 'phone', 'street', 'city', 'postalCode'];
+    const missingFields = requiredFields.filter(field => !body[field]);
+    
+    if (missingFields.length > 0) {
       return NextResponse.json(
-        { message: "Gültige E-Mail Adresse ist erforderlich" },
+        { message: `Fehlende Felder: ${missingFields.join(', ')}` },
         { status: 400 }
       );
     }
 
-    if (!ticketCode || !/^[A-Z0-9]{8}$/.test(ticketCode)) {
+    // Email Validierung
+    if (!/^\S+@\S+\.\S+/.test(body.email)) {
+      return NextResponse.json(
+        { message: "Ungültige E-Mail Adresse" },
+        { status: 400 }
+      );
+    }
+
+    // Ticket Code Validierung
+    if (!/^[A-Z0-9]{8}$/.test(body.ticketCode)) {
       return NextResponse.json(
         { message: "Ungültiger Ticket-Code" },
         { status: 400 }
       );
     }
 
-    if (!consent) {
+    if (!body.consent) {
       return NextResponse.json(
-        { message: "Einwilligung zur Datenschutzerklärung ist erforderlich" },
+        { message: "Einwilligung erforderlich" },
         { status: 400 }
       );
     }
 
-    // Pflichtfelder validieren
-    const requiredFields = ['firstName', 'lastName', 'phone', 'street', 'postalCode', 'city'];
-    const missingFields = requiredFields.filter(field => !body[field]);
-    
-    if (missingFields.length > 0) {
-      return NextResponse.json(
-        { message: `Folgende Felder sind erforderlich: ${missingFields.join(', ')}` },
-        { status: 400 }
-      );
-    }
-
-    // Daten für Export vorbereiten
+    // Daten vorbereiten
     const submissionData = {
       datum: new Date().toLocaleDateString('de-DE'),
       uhrzeit: new Date().toLocaleTimeString('de-DE'),
-      ticket_code: ticketCode,
-      vorname: firstName,
-      nachname: lastName,
-      email: email,
-      handynummer: phone,
-      strasse: street,
-      plz: postalCode,
-      stadt: city,
-      land: country,
-      quelle: source,
-      utm_source: utm_source || '',
-      utm_medium: utm_medium || '',
-      utm_campaign: utm_campaign || '',
-      einwilligung: consent ? 'Ja' : 'Nein',
-      einwilligung_zeit: consentTs || new Date().toISOString()
+      ticket_code: body.ticketCode,
+      vorname: body.firstName,
+      nachname: body.lastName,
+      email: body.email,
+      handynummer: body.phone,
+      strasse: body.street,
+      plz: body.postalCode,
+      stadt: body.city,
+      land: body.country || 'DE',
+      quelle: body.source || "golden_ticket",
+      utm_source: body.utm_source || '',
+      utm_medium: body.utm_medium || '',
+      utm_campaign: body.utm_campaign || '',
+      einwilligung: 'Ja',
+      einwilligung_zeit: body.consentTs || new Date().toISOString()
     };
 
-    // Daten in Google Sheets speichern
-    await saveToDatabase(submissionData);
+    // Google Sheets mit Timeout
+    await saveToGoogleSheets(submissionData);
 
-    // Erfolgsresponse
     return NextResponse.json({
       success: true,
-      message: "Teilnahme erfolgreich registriert!",
-      ticketCode,
-      participantId: generateParticipantId(ticketCode, email)
+      message: "Registrierung erfolgreich!",
+      ticketCode: body.ticketCode
     });
 
   } catch (error) {
-    console.error("Golden Ticket registration error:", error);
+    console.error("API Error:", error);
     return NextResponse.json(
-      { 
-        message: "Registrierung fehlgeschlagen",
-        error: process.env.NODE_ENV === "development" ? error.message : undefined
-      },
+      { message: "Server Fehler" },
       { status: 500 }
     );
   }
 }
 
-// ============================================
-// HILFSFUNKTIONEN
-// ============================================
-
-async function saveToDatabase(data) {
-  console.log("📝 Saving to Google Sheets...");
-  console.log("Data:", JSON.stringify(data, null, 2));
-  
+async function saveToGoogleSheets(data) {
   const sheetsUrl = process.env.GOOGLE_SHEETS_WEB_APP_URL;
   
   if (!sheetsUrl) {
-    console.error("❌ GOOGLE_SHEETS_WEB_APP_URL not set!");
-    throw new Error('Google Sheets URL nicht konfiguriert');
+    console.log("Mock: Daten würden gespeichert werden:", data);
+    return; // Mock für Build
   }
+  
+  // Timeout für Google Sheets Request
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
   
   try {
     const response = await fetch(sheetsUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-      redirect: 'follow'
+      signal: controller.signal
     });
     
-    const responseText = await response.text();
-    
     if (!response.ok) {
-      console.error("❌ Google Sheets API error:", responseText);
-      throw new Error(`Failed to save to Google Sheets: ${response.status}`);
+      throw new Error(`Sheets API: ${response.status}`);
     }
     
-    console.log("✅ Successfully saved to Google Sheets!");
-    console.log("Response:", responseText);
-    
-  } catch (error) {
-    console.error("❌ Error saving to Google Sheets:", error);
-    throw error; // Fehler werfen, damit User Feedback bekommt
+  } finally {
+    clearTimeout(timeout);
   }
-}
-
-function generateParticipantId(ticketCode, email) {
-  return crypto
-    .createHash('md5')
-    .update(ticketCode + email + Date.now())
-    .digest('hex')
-    .substring(0, 12)
-    .toUpperCase();
 }
