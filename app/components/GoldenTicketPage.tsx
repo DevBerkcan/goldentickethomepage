@@ -126,17 +126,25 @@ export default function GoldenTicketPage() {
     }
   };
 
-  // CONFIRMATION SCREEN
+  // CONFIRMATION SCREEN - RESPONSIVE
   if (step === "confirmation") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 px-4">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center max-w-2xl">
-          <div className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
-            <span className="text-6xl">✓</span>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 px-4 py-8">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }} 
+          animate={{ opacity: 1, scale: 1 }} 
+          className="text-center w-full max-w-2xl mx-auto"
+        >
+          <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-2xl">
+            <span className="text-4xl sm:text-5xl md:text-6xl">✓</span>
           </div>
-          <h1 className="text-5xl font-black text-white mb-4">GLÜCKWUNSCH!</h1>
-          <p className="text-2xl text-white mb-8">Du bist jetzt offiziell dabei! 🎫</p>
-          <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl mb-8 text-white text-lg space-y-3">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-3 sm:mb-4 px-2">
+            GLÜCKWUNSCH!
+          </h1>
+          <p className="text-lg sm:text-xl md:text-2xl text-white mb-6 sm:mb-8 px-2">
+            Du bist jetzt offiziell dabei! 🎫
+          </p>
+          <div className="bg-white/10 backdrop-blur-xl p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl mb-6 sm:mb-8 text-white text-base sm:text-lg space-y-2 sm:space-y-3 mx-2">
             <p>✅ Dein Code wurde registriert</p>
             <p>📧 Bestätigung an {formData.email}</p>
             <p>🏆 350+ Gewinnchancen aktiviert</p>
@@ -146,26 +154,28 @@ export default function GoldenTicketPage() {
     );
   }
 
-  // CONTACT FORM
+  // CONTACT FORM - RESPONSIVE
   if (step === "contact") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 px-4 py-12">
-        <div className="container mx-auto max-w-2xl">
-          <div className="bg-white/10 backdrop-blur-2xl p-8 rounded-3xl border border-white/20">
-            <h2 className="text-3xl font-black text-white mb-2 text-center">Deine Kontaktdaten</h2>
-            <p className="text-blue-200 text-center mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 px-3 sm:px-4 py-8 sm:py-12">
+        <div className="container mx-auto max-w-2xl w-full">
+          <div className="bg-white/10 backdrop-blur-2xl p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-white/20">
+            <h2 className="text-2xl sm:text-3xl font-black text-white mb-2 text-center">
+              Deine Kontaktdaten
+            </h2>
+            <p className="text-blue-200 text-center mb-4 sm:mb-6 text-sm sm:text-base">
               Wir senden dir eine Benachrichtigung, sobald du gewonnen hast. Trage jetzt deine Kontaktdaten ein und erhalte deinen Gewinn direkt zu dir nach Hause.
             </p>
             
-            <div className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <input
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                     placeholder="Vorname *"
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all text-sm sm:text-base"
                   />
                   {errors.firstName && <p className="text-red-300 text-sm mt-1">{errors.firstName}</p>}
                 </div>
@@ -175,7 +185,7 @@ export default function GoldenTicketPage() {
                     value={formData.lastName}
                     onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                     placeholder="Nachname *"
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
+                    className="w-full px-3 sm:px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all text-sm sm:text-base"
                   />
                   {errors.lastName && <p className="text-red-300 text-sm mt-1">{errors.lastName}</p>}
                 </div>
@@ -186,7 +196,7 @@ export default function GoldenTicketPage() {
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 placeholder="E-Mail *"
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
+                className="w-full px-3 sm:px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all text-sm sm:text-base"
               />
               {errors.email && <p className="text-red-300 text-sm">{errors.email}</p>}
 
@@ -195,7 +205,7 @@ export default function GoldenTicketPage() {
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 placeholder="Handynummer *"
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
+                className="w-full px-3 sm:px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all text-sm sm:text-base"
               />
               {errors.phone && <p className="text-red-300 text-sm">{errors.phone}</p>}
 
@@ -204,43 +214,49 @@ export default function GoldenTicketPage() {
                 value={formData.street}
                 onChange={(e) => setFormData({...formData, street: e.target.value})}
                 placeholder="Straße und Hausnummer *"
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
+                className="w-full px-3 sm:px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all text-sm sm:text-base"
               />
               {errors.street && <p className="text-red-300 text-sm">{errors.street}</p>}
 
-              <div className="grid grid-cols-3 gap-4">
-                <input
-                  type="text"
-                  value={formData.postalCode}
-                  onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
-                  placeholder="PLZ *"
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
-                />
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => setFormData({...formData, city: e.target.value})}
-                  placeholder="Stadt *"
-                  className="col-span-2 w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="sm:col-span-1">
+                  <input
+                    type="text"
+                    value={formData.postalCode}
+                    onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
+                    placeholder="PLZ *"
+                    className="w-full px-3 sm:px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all text-sm sm:text-base"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => setFormData({...formData, city: e.target.value})}
+                    placeholder="Stadt *"
+                    className="w-full px-3 sm:px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white placeholder:text-white/60 focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all text-sm sm:text-base"
+                  />
+                </div>
               </div>
+              {errors.postalCode && <p className="text-red-300 text-sm">{errors.postalCode}</p>}
+              {errors.city && <p className="text-red-300 text-sm">{errors.city}</p>}
 
               <select
                 value={formData.country}
                 onChange={(e) => setFormData({...formData, country: e.target.value})}
-                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all"
+                className="w-full px-3 sm:px-4 py-3 rounded-xl bg-white/10 border border-white/30 text-white focus:bg-white/20 focus:border-white/50 focus:outline-none transition-all text-sm sm:text-base"
               >
                 <option value="DE" className="bg-gray-900">🇩🇪 Deutschland</option>
                 <option value="AT" className="bg-gray-900">🇦🇹 Österreich</option>
                 <option value="CH" className="bg-gray-900">🇨🇭 Schweiz</option>
               </select>
 
-              <label className="flex items-start gap-3 text-white text-sm cursor-pointer">
+              <label className="flex items-start gap-2 sm:gap-3 text-white text-xs sm:text-sm cursor-pointer">
                 <input
                   type="checkbox"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
-                  className="mt-1 w-5 h-5 rounded"
+                  className="mt-0.5 sm:mt-1 w-4 h-4 sm:w-5 sm:h-5 rounded flex-shrink-0"
                 />
                 <span>Ich willige ein, am Gewinnspiel teilzunehmen und akzeptiere die Datenschutzerklärung. *</span>
               </label>
@@ -250,7 +266,7 @@ export default function GoldenTicketPage() {
                 onClick={handleContactSubmit}
                 disabled={isLoading || !consent}
                 whileHover={{ scale: isLoading || !consent ? 1 : 1.02 }}
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-black py-4 rounded-2xl disabled:opacity-50 shadow-2xl text-lg"
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-black py-3 sm:py-4 rounded-xl sm:rounded-2xl disabled:opacity-50 shadow-2xl text-base sm:text-lg"
               >
                 {isLoading ? "Wird registriert..." : "JETZT TEILNEHMEN →"}
               </motion.button>
@@ -261,10 +277,10 @@ export default function GoldenTicketPage() {
     );
   }
 
-  // HAUPTSEITE - CODE EINGABE
+  // HAUPTSEITE - CODE EINGABE - RESPONSIVE
   return (
     <div 
-      className="min-h-screen relative flex items-center justify-center"
+      className="min-h-screen relative flex items-center justify-center px-3 sm:px-4 py-8"
       style={{
         backgroundImage: "url('/calender-background.jpg')", 
         backgroundSize: 'cover',
@@ -275,19 +291,32 @@ export default function GoldenTicketPage() {
       {/* Dunkler Overlay für bessere Lesbarkeit */}
       <div className="absolute inset-0 bg-black/20"></div>
 
-      {/* CODE EINGABE - Freischwebend in der Mitte */}
+      {/* CODE EINGABE - Responsive Container */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-xl mx-4"
+        className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-xl mx-auto"
       >
         
-        {/* Transparent/Glassmorphism Style - KEIN harter Kasten */}
         <div className="relative">
-          
-          {/* Code Eingabe Feld */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
+            {/* TITLE SECTION */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-center mb-4 sm:mb-6"
+            >
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 drop-shadow-2xl">
+                TIC
+              </h1>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-yellow-400 drop-shadow-2xl">
+                CODE EINLÖSEN
+              </h2>
+            </motion.div>
+
+            {/* CODE INPUT */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -302,30 +331,32 @@ export default function GoldenTicketPage() {
                 }}
                 placeholder="GEWINN-CODE"
                 maxLength={8}
-                className="w-full px-8 py-6 text-4xl font-bold tracking-[0.5em] text-center bg-white/95 backdrop-blur-md rounded-2xl focus:outline-none focus:ring-4 focus:ring-yellow-400/50 transition-all text-gray-900 uppercase placeholder:text-gray-400 shadow-2xl border-4 border-yellow-400/50"
+                className="w-full px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 text-xl sm:text-2xl md:text-3xl font-bold tracking-[0.3em] sm:tracking-[0.4em] md:tracking-[0.5em] text-center bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl focus:outline-none focus:ring-3 sm:focus:ring-4 focus:ring-yellow-400/50 transition-all text-gray-900 uppercase placeholder:text-gray-400 shadow-2xl border-2 sm:border-3 md:border-4 border-yellow-400/50"
                 style={{
                   textShadow: '0 2px 10px rgba(0,0,0,0.1)'
                 }}
               />
-              <div className="text-center mt-2 text-white text-sm font-bold drop-shadow-lg">
+              <div className="text-center mt-2 text-white text-xs sm:text-sm font-bold drop-shadow-lg">
                 {formData.ticketCode.length}/8 Zeichen
               </div>
             </motion.div>
 
+            {/* ERROR MESSAGE */}
             <AnimatePresence>
               {errors.ticketCode && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="bg-red-500/90 backdrop-blur-md text-white p-4 rounded-xl flex items-center gap-2 shadow-xl"
+                  className="bg-red-500/90 backdrop-blur-md text-white p-3 sm:p-4 rounded-lg sm:rounded-xl flex items-center gap-2 shadow-xl text-sm sm:text-base"
                 >
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                   <span className="font-bold">{errors.ticketCode}</span>
                 </motion.div>
               )}
             </AnimatePresence>
 
+            {/* SUBMIT BUTTON */}
             <motion.button
               onClick={handleCodeSubmit}
               disabled={isLoading}
@@ -334,32 +365,46 @@ export default function GoldenTicketPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="w-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 text-black font-black py-5 px-8 rounded-2xl shadow-2xl hover:shadow-3xl transition-all disabled:opacity-50 text-2xl border-4 border-yellow-300"
+              className="w-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 text-black font-black py-3 sm:py-4 md:py-5 px-4 sm:px-6 md:px-8 rounded-xl sm:rounded-2xl shadow-2xl hover:shadow-3xl transition-all disabled:opacity-50 text-lg sm:text-xl md:text-2xl border-2 sm:border-3 md:border-4 border-yellow-300"
               style={{
                 textShadow: '0 1px 2px rgba(0,0,0,0.2)'
               }}
             >
               {isLoading ? (
-                <span className="flex items-center justify-center gap-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-3 border-black border-t-transparent" />
+                <span className="flex items-center justify-center gap-2 sm:gap-3">
+                  <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 border-2 sm:border-3 border-black border-t-transparent" />
                   Prüfe...
                 </span>
               ) : (
-                <span className="flex items-center justify-center gap-3">
+                <span className="flex items-center justify-center gap-2 sm:gap-3">
                   CODE EINLÖSEN
-                  <ChevronRight className="w-7 h-7" />
+                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
                 </span>
               )}
             </motion.button>
 
+            {/* CODE HINT */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-center text-white text-sm font-bold drop-shadow-lg bg-black/40 backdrop-blur-sm py-2 px-4 rounded-full inline-block mx-auto"
+              className="text-center text-white text-xs sm:text-sm font-bold drop-shadow-lg bg-black/40 backdrop-blur-sm py-2 px-3 sm:px-4 rounded-full inline-block mx-auto"
             >
               8-stelliger Code mit Buchstaben & Zahlen
             </motion.p>
+
+            {/* INFO TEXT */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="text-center text-white text-sm sm:text-base drop-shadow-lg bg-black/40 backdrop-blur-sm p-3 sm:p-4 rounded-xl sm:rounded-2xl"
+            >
+              <p className="font-bold mb-1">IN JEDEM KALENDER STECKT DEIN GOLDENES TICKET!</p>
+              <p className="text-xs sm:text-sm">
+                <strong>HINTER JEDEM TÜRCHEN STECKT NICHT NUR EINE SÜßIGKEIT, SONDERN AUCH DEIN GOLDENES TICKET!</strong> KUHREL DEINE HUMMER FREI UND SEI TÄGLICH UM 20 UHR LIVE AUF TAKTOK DABEI – MIT EIN BISSCHEN GLÜCK GEHÖRT BALD EINER DER 350 GEWINNE DIR.
+              </p>
+            </motion.div>
           </div>
         </div>
       </motion.div>
@@ -369,9 +414,9 @@ export default function GoldenTicketPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.7 }}
-        className="absolute bottom-8 left-0 right-0 text-center z-10"
+        className="absolute bottom-4 sm:bottom-6 left-0 right-0 text-center z-10 px-3"
       >
-        <p className="text-white text-sm drop-shadow-lg bg-black/40 backdrop-blur-sm py-2 px-6 rounded-full inline-block">
+        <p className="text-white text-xs sm:text-sm drop-shadow-lg bg-black/40 backdrop-blur-sm py-2 px-3 sm:px-4 rounded-full inline-block max-w-sm sm:max-w-md">
           Mit der Teilnahme stimmst du der Speicherung deiner Daten zu · 
           <a href="/datenschutz" className="underline ml-1 font-bold hover:text-yellow-300 transition-colors">
             Datenschutz
