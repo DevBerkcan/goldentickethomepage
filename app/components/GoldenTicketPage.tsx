@@ -72,10 +72,15 @@ export default function GoldenTicketPage() {
   const [consent, setConsent] = useState(false);
   const [mounted, setMounted] = useState(false);
   const submittedRef = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Auto-Focus auf Code-Eingabefeld
+    if (inputRef.current && step === "code") {
+      setTimeout(() => inputRef.current?.focus(), 500);
+    }
+  }, [step]);
 
   const getUTMParameter = (param: string): string | null => {
     if (typeof window === "undefined") return null;
@@ -137,7 +142,7 @@ export default function GoldenTicketPage() {
     if (!formData.street) newErrors.street = "Straße erforderlich";
     if (!formData.city) newErrors.city = "Stadt erforderlich";
     if (!formData.postalCode) newErrors.postalCode = "PLZ erforderlich";
-    if (!consent) newErrors.consent = "Bitte stimme zu";
+    if (!consent) newErrors.consent = "Bitte stimme der Datenverarbeitung zu";
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -166,7 +171,7 @@ export default function GoldenTicketPage() {
           animate={{ opacity: 1, scale: 1 }} 
           className="text-center w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl mx-auto"
         >
-          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5 md:mb-6 shadow-2xl">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5 md:mb-6">
             <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">✓</span>
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-white mb-3 sm:mb-4 px-2">
@@ -179,6 +184,8 @@ export default function GoldenTicketPage() {
             <p>✅ Dein Code wurde registriert</p>
             <p>📧 Bestätigung an {formData.email}</p>
             <p>🏆 350+ Gewinnchancen aktiviert</p>
+            <p>⏰ Tägliche Ziehung um 20:00 Uhr auf TikTok</p>
+            <p>📱 Gewinner werden per E-Mail/SMS benachrichtigt</p>
           </div>
         </motion.div>
       </div>
@@ -282,26 +289,53 @@ export default function GoldenTicketPage() {
                 <option value="CH" className="bg-gray-900">🇨🇭 Schweiz</option>
               </select>
 
-              <label className="flex items-start gap-2 sm:gap-3 text-white text-xs sm:text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)}
-                  className="mt-0.5 sm:mt-1 w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded flex-shrink-0"
-                />
-                <span>Ich willige ein, am Gewinnspiel teilzunehmen und akzeptiere die Datenschutzerklärung. *</span>
-              </label>
-              {errors.consent && <p className="text-red-300 text-xs sm:text-sm">{errors.consent}</p>}
+              {/* Einwilligungs-Checkbox */}
+              <div className="bg-white/5 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-white/10">
+                <label className="flex items-start gap-2 sm:gap-3 text-white text-xs sm:text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5 sm:mt-1 w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded flex-shrink-0"
+                  />
+                  <span>
+                    Ich willige ein, am Gewinnspiel teilzunehmen und akzeptiere die{" "}
+                    <a href="https://sweetsausallerwelt.de/datenschutz" target="_blank" className="text-yellow-300 underline hover:text-yellow-200 font-bold">
+                      Datenschutzerklärung
+                    </a>{" "}
+                    und{" "}
+                    <a href="/teilnahmebedingungen" target="_blank" className="text-yellow-300 underline hover:text-yellow-200 font-bold">
+                      Teilnahmebedingungen
+                    </a>
+                    . *
+                  </span>
+                </label>
+                {errors.consent && <p className="text-red-300 text-xs sm:text-sm mt-2">{errors.consent}</p>}
+              </div>
 
               <motion.button
                 onClick={handleContactSubmit}
                 disabled={isLoading || !consent}
                 whileHover={{ scale: isLoading || !consent ? 1 : 1.02 }}
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-black py-3 sm:py-4 rounded-lg sm:rounded-xl md:rounded-2xl disabled:opacity-50 shadow-2xl text-sm sm:text-base md:text-lg"
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-black font-black py-3 sm:py-4 rounded-lg sm:rounded-xl md:rounded-2xl disabled:opacity-50 text-sm sm:text-base md:text-lg"
               >
                 {isLoading ? "Wird registriert..." : "JETZT TEILNEHMEN →"}
               </motion.button>
             </div>
+          </div>
+
+          {/* Transparenz-Info */}
+          <div className="mt-4 sm:mt-5 md:mt-6 text-center">
+            <p className="text-blue-200 text-xs sm:text-sm">
+              <strong>Wichtig:</strong> Teilnahme ab 18 Jahren, Wohnsitz D/A/CH. 
+              Aktionszeitraum: 01.11.–24.12.2024. Tägliche Ziehung um 20:00 Uhr auf TikTok. 
+              Gewinner werden per E-Mail/SMS benachrichtigt und müssen sich binnen 7 Tagen zurückmelden. 
+              Details:{" "}
+              <a href="/teilnahmebedingungen" className="text-yellow-300 underline hover:text-yellow-200 font-bold">
+                Teilnahmebedingungen
+              </a>
+              .
+            </p>
           </div>
         </div>
       </div>
@@ -378,45 +412,57 @@ export default function GoldenTicketPage() {
           </motion.div>
 
           {/* CODE EINGABE MIT GEWINNBILDERN */}
-          <div className="relative max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl mx-auto min-h-[420px] sm:min-h-[450px] md:min-h-[500px] lg:min-h-[600px] flex items-center justify-center z-10">
+          <div className="relative max-w-[380px] sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl mx-auto min-h-[450px] sm:min-h-[550px] md:min-h-[600px] lg:min-h-[650px] flex items-center justify-center z-10 px-4">
             
-            {/* Gewinnbilder - Näher am Inputfeld, größere Bilder */}
+            {/* Gewinnbilder - MEHR ABSTAND zwischen den Bildern */}
             {mounted && [
+              // Oben links - Airpods (WEITER NACH AUSSEN)
+              { 
+                img: "/airpods.png", 
+                rotation: -15, 
+                pos: "top-[0%] left-[-20%] sm:top-[5%] sm:left-[-10%] md:top-[8%] md:left-[-15%] lg:top-[10%] lg:left-[-25%] xl:left-[-30%] 2xl:left-[-35%]", 
+                size: "w-[80px] h-[80px] sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 xl:w-52 xl:h-52",
+                hideOnMobile: false
+              },
+              // Oben rechts - Box (WEITER NACH AUSSEN)
               { 
                 img: "/box.png", 
-                rotation: -15, 
-                pos: "top-[15%] sm:top-[10%] md:top-[5%] left-[-10%] sm:left-[-8%] md:left-[4%]", 
-                size: "w-[95px] h-[95px] sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 xl:w-52 xl:h-52"
+                rotation: 10, 
+                pos: "top-[0%] right-[-20%] sm:top-[5%] sm:right-[-10%] md:top-[8%] md:right-[-15%] lg:top-[10%] lg:right-[-25%] xl:right-[-30%] 2xl:right-[-35%]", 
+                size: "w-[80px] h-[80px] sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 xl:w-52 xl:h-52",
+                hideOnMobile: false
               },
-              { 
-                img: "/ps5.png", 
-                rotation: 8, 
-                pos: "top-[15%] sm:top-[10%] md:top-[5%] right-[-10%] sm:right-[-8%] md:right-[4%]", 
-                size: "w-[95px] h-[95px] sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 xl:w-52 xl:h-52"
-              },
+              // Mitte links - HandySweets (WEITER NACH AUSSEN)
               { 
                 img: "/HandySweets.png", 
                 rotation: -10, 
-                pos: "top-[48%] sm:top-[45%] md:top-[40%] right-[-12%] sm:right-[-10%] md:right-[-9%]", 
-                size: "w-[90px] h-[90px] sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 xl:w-52 xl:h-52"
+                pos: "top-[45%] -translate-y-1/2 left-[-30%] sm:left-[-15%] md:left-[-20%] lg:left-[-30%] xl:left-[-35%] 2xl:left-[-40%]", 
+                size: "w-[70px] h-[70px] sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 xl:w-48 xl:h-48",
+                hideOnMobile: false
               },
+              // Mitte rechts - PS5 (WEITER NACH AUSSEN)
               { 
-                img: "/social.png", 
+                img: "/ps5.png", 
                 rotation: 12, 
-                pos: "bottom-[8%] sm:bottom-[5%] md:bottom-[0%] lg:bottom-[-5%] right-[-8%] sm:right-[-5%] md:right-[5%]", 
-                size: "w-[115px] h-[115px] sm:w-40 sm:h-40 md:w-52 md:h-52 lg:w-60 lg:h-60 xl:w-72 xl:h-72"
+                pos: "top-[45%] -translate-y-1/2 right-[-30%] sm:right-[-15%] md:right-[-20%] lg:right-[-30%] xl:right-[-35%] 2xl:right-[-40%]", 
+                size: "w-[70px] h-[70px] sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 xl:w-48 xl:h-48",
+                hideOnMobile: false
               },
-              { 
-                img: "/airpods.png", 
-                rotation: -8, 
-                pos: "bottom-[8%] sm:bottom-[5%] md:bottom-[0%] lg:bottom-[-5%] left-[-8%] sm:left-[-5%] md:left-[5%]", 
-                size: "w-[115px] h-[115px] sm:w-40 sm:h-40 md:w-52 md:h-52 lg:w-60 lg:h-60 xl:w-72 xl:h-72"
-              },
+              // Unten links - Switch (WEITER NACH AUSSEN)
               { 
                 img: "/switch.png", 
-                rotation: 15, 
-                pos: "top-[48%] sm:top-[45%] md:top-[40%] left-[-12%] sm:left-[-10%] md:left-[-9%]", 
-                size: "w-[90px] h-[90px] sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 xl:w-52 xl:h-52"
+                rotation: -8, 
+                pos: "bottom-[0%] left-[-15%] sm:bottom-[5%] sm:left-[-10%] md:bottom-[8%] md:left-[-15%] lg:bottom-[10%] lg:left-[-25%] xl:left-[-30%] 2xl:left-[-35%]", 
+                size: "w-[90px] h-[90px] sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 xl:w-56 xl:h-56",
+                hideOnMobile: false
+              },
+              // Unten rechts - Social Media Workshop (WEITER NACH AUSSEN)
+              { 
+                img: "/social.png", 
+                rotation: 10, 
+                pos: "bottom-[0%] right-[-15%] sm:bottom-[5%] sm:right-[-10%] md:bottom-[8%] md:right-[-15%] lg:bottom-[10%] lg:right-[-25%] xl:right-[-30%] 2xl:right-[-35%]", 
+                size: "w-[90px] h-[90px] sm:w-32 sm:h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 xl:w-56 xl:h-56",
+                hideOnMobile: false
               }
             ].map((prize, idx) => (
               <motion.div
@@ -424,14 +470,14 @@ export default function GoldenTicketPage() {
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 + idx * 0.1, type: "spring" }}
-                className={`absolute ${prize.pos} z-30`}
-                style={{ transform: `rotate(${prize.rotation}deg)` }}
+                className={`absolute ${prize.pos} ${prize.hideOnMobile ? 'hidden sm:block' : ''}`}
+                style={{ transform: `rotate(${prize.rotation}deg)`, zIndex: 5 }}
               >
                 <motion.img
                   src={prize.img}
                   alt={`Gewinn ${idx + 1}`}
-                  className={`${prize.size} object-contain rounded-lg sm:rounded-xl`}
-                  whileHover={{ scale: 1.1, rotate: 0, zIndex: 50 }}
+                  className={`${prize.size} object-contain rounded-lg sm:rounded-xl pointer-events-none`}
+                  whileHover={{ scale: 1.05, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 />
               </motion.div>
@@ -454,6 +500,7 @@ export default function GoldenTicketPage() {
                   <div className="space-y-3 sm:space-y-4">
                     <div className="relative">
                       <input
+                        ref={inputRef}
                         type="text"
                         value={formData.ticketCode}
                         onChange={(e) => {
@@ -483,12 +530,28 @@ export default function GoldenTicketPage() {
                       )}
                     </AnimatePresence>
 
+                    {/* Einwilligungstext unter Code-Eingabe */}
+                    <div className="text-center">
+                      <p className="text-blue-100 text-xs sm:text-sm">
+                        Mit Klick auf Code einlösen willige ich in die Verarbeitung meiner Daten zur Gewinnabwicklung ein. 
+                        Hinweise in der{" "}
+                        <a href="https://sweetsausallerwelt.de/datenschutz" target="_blank" className="text-yellow-300 underline hover:text-yellow-200 font-bold">
+                          Datenschutzerklärung
+                        </a>{" "}
+                        und den{" "}
+                        <a href="/teilnahmebedingungen" target="_blank" className="text-yellow-300 underline hover:text-yellow-200 font-bold">
+                          Teilnahmebedingungen
+                        </a>
+                        .
+                      </p>
+                    </div>
+
                     <motion.button
                       onClick={handleCodeSubmit}
                       disabled={isLoading}
                       whileHover={{ scale: isLoading ? 1 : 1.03 }}
                       whileTap={{ scale: isLoading ? 1 : 0.97 }}
-                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black py-3.5 sm:py-4 md:py-5 px-4 sm:px-5 md:px-6 rounded-xl sm:rounded-2xl shadow-2xl hover:shadow-3xl transition-all disabled:opacity-50 text-sm sm:text-base md:text-lg lg:text-xl"
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black py-3.5 sm:py-4 md:py-5 px-4 sm:px-5 md:px-6 rounded-xl sm:rounded-2xl hover:shadow-3xl transition-all disabled:opacity-50 text-sm sm:text-base md:text-lg lg:text-xl"
                     >
                       {isLoading ? (
                         <span className="flex items-center justify-center gap-2 sm:gap-3">
@@ -512,17 +575,16 @@ export default function GoldenTicketPage() {
             </motion.div>
           </div>
 
-          {/* Footer Text */}
+          {/* Footer Text mit Links */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
             className="text-center mt-10 sm:mt-8 md:mt-10 lg:mt-12 text-blue-200 text-xs sm:text-sm"
           >
-            <p className="mb-1 sm:mb-2 px-2">Mit der Teilnahme stimmst du der Speicherung deiner Daten zur Gewinnabwicklung zu.</p>
-            <a href="/datenschutz" className="text-yellow-300 underline hover:text-yellow-200 font-bold text-xs sm:text-sm md:text-base">
-              Datenschutzerklärung
-            </a>
+            <p className="mb-1 sm:mb-2 px-2">
+              Mit der Teilnahme stimmst du der Speicherung deiner Daten zur Gewinnabwicklung zu.
+            </p>
           </motion.div>
 
         </div>

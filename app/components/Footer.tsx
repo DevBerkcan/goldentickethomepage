@@ -78,6 +78,7 @@ export default function Footer() {
             <div className="flex flex-wrap justify-center md:justify-start gap-x-6 gap-y-2 text-sm text-gray-400">
               <a href="https://sweetsausallerwelt.de/pages/impressum" className="hover:text-white transition">Impressum</a>
               <a href="https://sweetsausallerwelt.de/pages/datenschutzerklarung" className="hover:text-white transition">Datenschutz</a>
+              <a href="https://sweetsausallerwelt.de/pages/teilnahmebedingungen" className="hover:text-white transition">Teilnahmebedingungen</a>
               <a href="https://sweetsausallerwelt.de/pages/agb" className="hover:text-white transition">AGB</a>
             </div>
             <p className="text-center md:text-right text-sm text-gray-400">
