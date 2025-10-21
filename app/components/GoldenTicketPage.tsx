@@ -31,14 +31,9 @@ interface FormErrors {
 const SimpleSnowflake = ({ delay, index }: { delay: number; index: number }) => {
   return (
     <motion.div
-      className="absolute top-0 text-white/70 pointer-events-none text-xs sm:text-sm md:text-base"
-      initial={{ 
-        y: -20, 
-        x: `calc(${(index * 5) % 100}vw + ${index * 10}px)` 
-      }}
-      animate={{ 
-        y: "100vh" 
-      }}
+      className="absolute top-0 text-white/70 pointer-events-none text-xs"
+      initial={{ y: -20 }}
+      animate={{ y: "100vh" }}
       transition={{
         duration: Math.random() * 10 + 10,
         repeat: Infinity,
