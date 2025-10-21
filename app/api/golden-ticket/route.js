@@ -58,9 +58,14 @@ async function saveToSheets(payload) {
     return { ok: false, error: "GOOGLE_SHEETS_WEB_APP_URL not set" };
   }
 
+  // ✅ Deutsche Zeitzone verwenden
+  const now = new Date();
+  const datum = now.toLocaleDateString("de-DE", { timeZone: "Europe/Berlin" });
+  const uhrzeit = now.toLocaleTimeString("de-DE", { timeZone: "Europe/Berlin" });
+
   const submission = {
-    datum: new Date().toLocaleDateString("de-DE"),
-    uhrzeit: new Date().toLocaleTimeString("de-DE"),
+    datum: datum,
+    uhrzeit: uhrzeit,
     ticket_code: payload.ticketCode,
     vorname: payload.firstName,
     nachname: payload.lastName,
