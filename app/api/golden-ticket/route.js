@@ -67,24 +67,25 @@ export async function POST(request) {
       LNAME: lastName || "",
       MMERGE7: phone || "", // PHONE als Text (Merge Tag 7)
       MMERGE8: ticketCode || "", // TICKET (Merge Tag 8)
-      MMERGE9: offer || "Adventskalender 2024", // OFFER (Merge Tag 9)
+      MMERGE9: offer || "Adventskalender 5", // OFFER (Merge Tag 9)
       MMERGE10: source, // SOURCE (Merge Tag 10)
     };
-
-    // Adresse hinzufügen (Original ADDRESS = Merge Tag 3)
-    if (street || city || postalCode) {
-      merge_fields.ADDRESS = {
-        addr1: street || "",
-        city: city || "",
-        zip: postalCode || "",
-        country: country || "DE"
-      };
-    }
 
     // UTM-Parameter hinzufügen
     if (utm_source) merge_fields.MMERGE11 = utm_source; // UTM_SOURCE (Merge Tag 11)
     if (utm_medium) merge_fields.MMERGE12 = utm_medium; // UTM_MEDIUM (Merge Tag 12)
     if (utm_campaign) merge_fields.MMERGE13 = utm_campaign; // UTM_CAMPAIGN (Merge Tag 13)
+
+    // Adresse als TEXT speichern in MMERGE14 (das zweite ADDRESS-Feld)
+    // Vermeidet Probleme mit dem strukturierten ADDRESS-Feld
+    if (street || city || postalCode) {
+      const addressParts = [];
+      if (street) addressParts.push(street);
+      if (postalCode) addressParts.push(postalCode);
+      if (city) addressParts.push(city);
+      if (country && country !== "DE") addressParts.push(country);
+      merge_fields.MMERGE14 = addressParts.join(", ");
+    }
 
     const memberUrl = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${LIST_ID}/members/${subscriberHash}`;
 
@@ -134,7 +135,7 @@ export async function POST(request) {
     // Tags hinzufügen für Filterung
     const tags = [
       { name: "gewinnspiel-teilnehmer", status: "active" },
-      { name: "golden-ticket-2024", status: "active" },
+      { name: "golden-ticket-2025", status: "active" },
       { name: source, status: "active" },
       { name: `ticket-${ticketCode.substring(0, 3)}`, status: "active" } // Erste 3 Zeichen als Tag
     ];

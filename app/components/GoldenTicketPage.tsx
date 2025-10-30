@@ -90,7 +90,7 @@ export default function GoldenTicketPage() {
       body: JSON.stringify({
         ...data,
         source: "golden_ticket",
-        offer: "Adventskalender 2024",
+        offer: "Adventskalender 2025",
         utm_source: getUTMParameter("utm_source") || "direct",
         utm_medium: getUTMParameter("utm_medium") || "organic",
         utm_campaign: getUTMParameter("utm_campaign") || "golden_ticket",
@@ -167,7 +167,7 @@ export default function GoldenTicketPage() {
               postalCode: formData.postalCode,
               country: formData.country,
               source: "golden_ticket",
-              offer: "Adventskalender 2024",
+              offer: "Adventskalender 2025",
               utm_source: getUTMParameter("utm_source") || "direct",
               utm_medium: getUTMParameter("utm_medium") || "organic",
               utm_campaign: getUTMParameter("utm_campaign") || "golden_ticket",
