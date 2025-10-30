@@ -20,29 +20,38 @@
   --color-brand-cream: #FFFAF0;
 }
 
-/* Hintergrundbild auf html Element - funktioniert besser in Next.js */
+/* MOBILE FIRST - Hintergrundbild für Smartphones (Hochformat) */
 html {
-  background-image: url('/testbild.jpg');
+  background-image: url('/testbild-mobile.jpg');
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll; /* Scroll auf Mobile für bessere Performance */
   min-height: 100vh;
+}
+
+/* Tablet (ab 768px) */
+@media (min-width: 768px) {
+  html {
+    background-image: url('/testbild-desktop.jpg'); /* Optional: anderes Bild für größere Screens */
+    background-attachment: fixed; /* Fixed nur auf größeren Screens */
+  }
+}
+
+/* Desktop (ab 1024px) */
+@media (min-width: 1024px) {
+  html {
+    background-image: url('/testbild-desktop.jpg');
+    background-position: center center;
+  }
 }
 
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: transparent; /* Wichtig: Body transparent machen */
+  background: transparent;
   min-height: 100vh;
-}
-
-/* Für Smartphones - Optimierung */
-@media (max-width: 768px) {
-  html {
-    background-attachment: scroll; /* Bessere Performance auf Mobile */
-  }
 }
 
 h1, h2, h3, h4, h5, h6 {

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Head from "next/head";
 import GoldenTicketPage from "./components/GoldenTicketPage";
 import Footer from "./components/Footer";
+import StepByStepGuide from "./components/StepByStepGuide";
 
 function trackEvent(eventName: any) {
   // Placeholder for analytics event tracking
@@ -67,6 +68,8 @@ export default function Home() {
       <div id="hero-section">
         <GoldenTicketPage />
       </div>
+      {/* Step by Step Guide - NEU HINZUGEFÜGT */}
+      <StepByStepGuide />
       {/* Footer Komponente */}
       <Footer />
     </>
