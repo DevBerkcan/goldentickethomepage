@@ -1,0 +1,69 @@
+            {/* CODE EINGABE - Neues Design wie Referenzbild */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="relative z-20 w-full max-w-[500px] px-4"
+            >
+              {/* Überschrift */}
+              <div className="text-center mb-6">
+                <h2 className="text-white text-xl sm:text-2xl md:text-3xl font-bold mb-2">
+                  Gib deinen Code ein
+                </h2>
+                <p className="text-white/90 text-sm sm:text-base">
+                  8stelliger Code
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Weißer Input wie im Referenzbild */}
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={formData.ticketCode}
+                  onChange={(e) => {
+                    setFormData({...formData, ticketCode: e.target.value.toUpperCase()});
+                    setErrors({});
+                  }}
+                  placeholder=""
+                  maxLength={8}
+                  className="w-full px-6 py-5 text-lg sm:text-xl md:text-2xl font-bold text-center bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-yellow-400/50 transition-all text-gray-800 uppercase tracking-wider shadow-xl"
+                />
+
+                {/* Fehler */}
+                <AnimatePresence>
+                  {errors.ticketCode && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center gap-2 text-red-600 bg-red-100 p-3 rounded-xl text-sm"
+                    >
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="font-bold">{errors.ticketCode}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Goldener Button wie im Referenzbild */}
+                <motion.button
+                  onClick={handleCodeSubmit}
+                  disabled={isLoading}
+                  whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                  className="w-full text-white font-black py-5 px-6 rounded-2xl hover:shadow-2xl transition-all disabled:opacity-50 text-lg sm:text-xl uppercase shadow-xl"
+                  style={{
+                    background: 'linear-gradient(135deg, #c8941e 0%, #e6b043 50%, #c8941e 100%)'
+                  }}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                      Wird geprüft...
+                    </span>
+                  ) : (
+                    "EINLÖSEN"
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
