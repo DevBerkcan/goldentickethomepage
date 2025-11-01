@@ -498,9 +498,9 @@ export default function GoldenTicketPage() {
                         }}
                         placeholder="ABC12345"
                         maxLength={8}
-                        className="w-full px-3 sm:px-4 md:px-5 lg:px-6 py-3 sm:py-3 md:py-4 lg:py-5 text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-mono tracking-[0.25em] sm:tracking-[0.3em] md:tracking-[0.4em] text-center border-2 sm:border-3 md:border-4 border-yellow-400 bg-white rounded-xl sm:rounded-2xl focus:border-yellow-300 focus:outline-none focus:ring-2 sm:focus:ring-4 focus:ring-yellow-400/50 transition-all text-gray-800 uppercase placeholder:text-gray-400 placeholder:text-sm sm:placeholder:text-base"
+                        className="w-full px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 text-lg sm:text-xl md:text-2xl font-mono tracking-[0.3em] sm:tracking-[0.35em] text-center border-2 border-yellow-400 bg-white rounded-xl focus:border-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 transition-all text-gray-800 uppercase placeholder:text-gray-400"
                       />
-                      <div className="absolute right-2 sm:right-3 md:right-4 lg:right-6 top-1/2 -translate-y-1/2 text-gray-600 text-[10px] sm:text-xs md:text-sm font-bold bg-gray-100 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">
+                      <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-600 text-[10px] sm:text-xs font-bold bg-gray-100 px-1.5 py-0.5 rounded">
                         {formData.ticketCode.length}/8
                       </div>
                     </div>
@@ -519,28 +519,13 @@ export default function GoldenTicketPage() {
                       )}
                     </AnimatePresence>
 
-                    {/* Einwilligungstext unter Code-Eingabe */}
-                    <div className="text-center">
-                      <p className="text-gray-600 text-xs sm:text-sm">
-                        Mit Klick auf Code einlösen willige ich in die Verarbeitung meiner Daten zur Gewinnabwicklung ein.
-                        Hinweise in der{" "}
-                        <a href="https://sweetsausallerwelt.de/datenschutz" target="_blank" className="text-yellow-600 underline hover:text-yellow-700 font-bold">
-                          Datenschutzerklärung
-                        </a>{" "}
-                        und den{" "}
-                        <a href="/teilnahmebedingungen" target="_blank" className="text-yellow-600 underline hover:text-yellow-700 font-bold">
-                          Teilnahmebedingungen
-                        </a>
-                        .
-                      </p>
-                    </div>
 
                     <motion.button
                       onClick={handleCodeSubmit}
                       disabled={isLoading}
-                      whileHover={{ scale: isLoading ? 1 : 1.03 }}
-                      whileTap={{ scale: isLoading ? 1 : 0.97 }}
-                      className="w-full text-white font-black py-3.5 sm:py-4 md:py-5 px-4 sm:px-5 md:px-6 rounded-xl sm:rounded-2xl hover:shadow-3xl transition-all disabled:opacity-50 text-sm sm:text-base md:text-lg lg:text-xl"
+                      whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                      whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                      className="w-full text-white font-black py-2.5 sm:py-3 md:py-3.5 px-4 sm:px-5 md:px-6 rounded-xl hover:shadow-3xl transition-all disabled:opacity-50 text-base sm:text-lg md:text-xl"
                       style={{
                         background: 'linear-gradient(135deg, #c8941e 0%, #e6b043 50%, #c8941e 100%)'
                       }}
@@ -557,10 +542,6 @@ export default function GoldenTicketPage() {
                         </span>
                       )}
                     </motion.button>
-
-                    <p className="text-gray-600 text-center text-[11px] sm:text-xs md:text-sm mt-2 sm:mt-3 md:mt-4">
-                      ✓ Kostenlos  ✓ Sicher  ✓ Garantiert
-                    </p>
                   </div>
                 </div>
               </div>
