@@ -462,12 +462,7 @@ export default function GoldenTicketPage() {
             >
               <Ticket className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 text-yellow-400" />
             </motion.div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white mb-2 sm:mb-3 md:mb-4 drop-shadow-2xl leading-tight">
-              Im Wert von über €15.000
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl text-yellow-300 font-bold drop-shadow-lg">
-              8-stelliger Code
-            </p>
+           
           </motion.div>
 
           {/* Container für Code-Eingabe */}
