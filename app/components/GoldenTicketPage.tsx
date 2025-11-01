@@ -471,7 +471,7 @@ export default function GoldenTicketPage() {
           </motion.div>
 
           {/* Container für Code-Eingabe */}
-          <div className="relative w-full max-w-[380px] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto flex items-end justify-center pb-8 sm:pb-12 md:pb-16" style={{ minHeight: '60vh' }}>
+          <div className="relative w-full max-w-[380px] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto flex items-end justify-center pb-4 sm:pb-6 md:pb-8" style={{ minHeight: '65vh' }}>
             {/* CODE EINGABE */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -542,6 +542,20 @@ export default function GoldenTicketPage() {
                         </span>
                       )}
                     </motion.button>
+
+                    {/* Rechtliche Hinweise - sehr klein */}
+                    <div className="text-center mt-3">
+                      <p className="text-gray-500 text-[9px] sm:text-[10px] leading-tight">
+                        Mit Klick auf "Code einlösen" willige ich in die Verarbeitung meiner Daten zur Gewinnabwicklung ein.<br className="hidden sm:block" />
+                        <a href="https://sweetsausallerwelt.de/datenschutz" target="_blank" className="text-yellow-700 underline hover:text-yellow-800">
+                          Datenschutzerklärung
+                        </a>
+                        {" · "}
+                        <a href="/teilnahmebedingungen" target="_blank" className="text-yellow-700 underline hover:text-yellow-800">
+                          Teilnahmebedingungen
+                        </a>
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
