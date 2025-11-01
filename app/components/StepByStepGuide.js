@@ -11,7 +11,7 @@ export default function StepByStepGuide() {
       title: "Tritt der Community bei",
       description: "Melde dich kostenlos mit deiner E-Mail an und werde Teil unserer süßen Community von über 50.000 Mitgliedern.",
       icon: Users,
-      color: "from-pink-500 to-purple-600",
+      color: "from-yellow-600 to-yellow-500",
       details: [
         "Kostenlose Anmeldung in 30 Sekunden",
         "Sofortiger Zugang zur Community",
@@ -24,7 +24,7 @@ export default function StepByStepGuide() {
       title: "Unser Team kontaktiert dich",
       description: "Wenn du unter den ersten 100 bist, wird dich unser Team per E-Mail kontaktieren und alle Details bestätigen.",
       icon: Mail,
-      color: "from-blue-500 to-indigo-600",
+      color: "from-yellow-600 to-yellow-500",
       details: [
         "Automatische E-Mail-Bestätigung",
         "Persönliche Betreuung durch unser Team",
@@ -37,7 +37,7 @@ export default function StepByStepGuide() {
       title: "Dubai-Schokolade wird versendet",
       description: "Wir schicken dir deine exklusive Dubai-Schokolade direkt an deine Wunschadresse - komplett kostenlos!",
       icon: Package,
-      color: "from-green-500 to-emerald-600",
+      color: "from-yellow-600 to-yellow-500",
       details: [
         "Kostenloser Versand deutschlandweit",
         "Hochwertige Verpackung",
@@ -75,10 +75,8 @@ export default function StepByStepGuide() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-black mb-4">
-            <span className="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              Wie funktioniert das Ganze?
-            </span>
+          <h2 className="text-4xl md:text-5xl font-black mb-4 text-gray-800">
+            Wie funktioniert das Ganze?
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             In nur 3 einfachen Schritten zu deiner kostenlosen Dubai-Schokolade
@@ -91,7 +89,7 @@ export default function StepByStepGuide() {
             {/* Progress Line */}
             <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 rounded-full -translate-y-1/2 z-0">
               <motion.div
-                className="h-full bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"
+                className="h-full bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-full"
                 initial={{ width: "0%" }}
                 animate={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -105,7 +103,7 @@ export default function StepByStepGuide() {
                 onClick={() => handleStepClick(index)}
                 className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${
                   index <= activeStep
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
+                    ? 'bg-gradient-to-r from-yellow-600 to-yellow-500 text-white shadow-lg'
                     : 'bg-white text-gray-400 border-2 border-gray-200'
                 }`}
                 whileHover={{ scale: 1.1 }}
@@ -143,10 +141,10 @@ export default function StepByStepGuide() {
                 <div
                   className={`bg-white rounded-2xl p-8 shadow-lg border-2 transition-all duration-300 ${
                     isActive
-                      ? 'border-pink-500 shadow-xl'
+                      ? 'border-yellow-500 shadow-xl'
                       : isCompleted
                       ? 'border-green-500'
-                      : 'border-gray-200 hover:border-pink-300'
+                      : 'border-gray-200 hover:border-yellow-300'
                   }`}
                 >
                   {/* Icon */}
@@ -177,7 +175,7 @@ export default function StepByStepGuide() {
                           transition={{ delay: detailIndex * 0.1 }}
                           className="flex items-center gap-3 text-sm text-gray-600"
                         >
-                          <div className="w-2 h-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex-shrink-0" />
+                          <div className="w-2 h-2 bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-full flex-shrink-0" />
                           {detail}
                         </motion.div>
                       ))}
@@ -189,7 +187,7 @@ export default function StepByStepGuide() {
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center"
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-600 to-yellow-500 rounded-full flex items-center justify-center"
                     >
                       <div className="w-2 h-2 bg-white rounded-full" />
                     </motion.div>
