@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, AlertCircle, Sparkles, Ticket } from "lucide-react";
+import { ChevronRight, AlertCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface FormData {
@@ -192,37 +192,71 @@ export default function GoldenTicketPage() {
   // CONFIRMATION SCREEN
   if (step === "confirmation") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-transparent px-3 sm:px-4 md:px-6 py-6 sm:py-8 lg:py-12">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }} 
-          animate={{ opacity: 1, scale: 1 }} 
-          className="text-center w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl mx-auto"
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 lg:py-12">
+        {/* Vollbild-Hintergrund */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/Goldenticket_referenz.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        />
+
+        {/* Helles Overlay für bessere Lesbarkeit */}
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-sm" style={{ zIndex: 5 }} />
+
+        {/* Schneeflocken Animation */}
+        <div className="absolute inset-0 pointer-events-none z-10">
+          {mounted && Array.from({length: 20}).map((_, i) => (
+            <SimpleSnowflake key={i} delay={i * 0.5} index={i} />
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative z-20 text-center w-full max-w-[320px] sm:max-w-md md:max-w-lg mx-auto"
         >
-          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5 md:mb-6">
-            <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">✓</span>
+          {/* Icon - #16b9da (türkis/cyan) */}
+          <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-2xl" style={{ backgroundColor: '#16b9da' }}>
+            <span className="text-3xl sm:text-4xl md:text-5xl" style={{ color: '#ffffff' }}>✓</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-white mb-3 sm:mb-4 px-2">
+
+          {/* Title - #f8ab14 (orange/gold) */}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-3 sm:mb-4 px-2 drop-shadow-lg" style={{ color: '#f8ab14' }}>
             GLÜCKWUNSCH!
           </h1>
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white mb-4 sm:mb-5 md:mb-6 lg:mb-8 px-2">
+
+          {/* Content - #723a2b (braun) */}
+          <p className="text-base sm:text-lg md:text-xl mb-4 sm:mb-6 px-2 drop-shadow" style={{ color: '#723a2b' }}>
             Du bist jetzt offiziell dabei! 🎫
           </p>
-          <div className="bg-white/10 backdrop-blur-xl p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl mb-4 sm:mb-5 md:mb-6 lg:mb-8 text-white text-sm sm:text-base md:text-lg space-y-2 sm:space-y-3 mx-2">
-            <p className="font-bold text-xs sm:text-sm md:text-base">
+
+          {/* Info Box - #ffffff Background, #723a2b Text, #dddddd Border */}
+          <div className="backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-2xl mb-4 sm:mb-6 text-sm sm:text-base space-y-2 sm:space-y-3 mx-2 shadow-xl border-2" style={{ backgroundColor: '#ffffff', color: '#723a2b', borderColor: '#dddddd' }}>
+            <p className="font-bold">
               ✅ Deine Teilnahme wurde registriert
             </p>
-            <p className="text-xs sm:text-sm md:text-base">
+            <p>
               📧 Du erhältst in Kürze eine Bestätigungsmail
             </p>
-            <p className="text-xs sm:text-sm md:text-base">
+            <p>
               🎁 Wir benachrichtigen dich, wenn du gewonnen hast!
             </p>
           </div>
+
+          {/* Button - #f8ab14 Background, #ffffff Text, Hover: #16b9da */}
           <motion.a
             href="https://sweetsausallerwelt.de"
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.05, backgroundColor: '#16b9da' }}
             whileTap={{ scale: 0.95 }}
-            className="inline-block bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black py-3 sm:py-4 md:py-5 px-5 sm:px-6 md:px-8 lg:px-10 rounded-xl sm:rounded-2xl hover:shadow-3xl transition-all text-sm sm:text-base md:text-lg lg:text-xl mx-2"
+            className="inline-block font-black py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all text-base sm:text-lg mx-2 shadow-xl border-2"
+            style={{
+              backgroundColor: '#f8ab14',
+              color: '#ffffff',
+              borderColor: '#f8ab14'
+            }}
           >
             Zurück zum Shop
           </motion.a>
@@ -234,17 +268,40 @@ export default function GoldenTicketPage() {
   // CONTACT FORM
   if (step === "contact") {
     return (
-      <div className="min-h-screen bg-transparent px-3 sm:px-4 md:px-6 py-6 sm:py-8 lg:py-12">
-        <div className="max-w-[340px] sm:max-w-sm md:max-w-md lg:max-w-2xl mx-auto">
+      <div className="relative min-h-screen overflow-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 lg:py-12">
+        {/* Vollbild-Hintergrund */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/Goldenticket_referenz.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        />
+
+        {/* Schneeflocken Animation */}
+        <div className="absolute inset-0 pointer-events-none z-10">
+          {mounted && Array.from({length: 20}).map((_, i) => (
+            <SimpleSnowflake key={i} delay={i * 0.5} index={i} />
+          ))}
+        </div>
+
+        <div className="relative z-20 max-w-[340px] sm:max-w-sm md:max-w-md mx-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-br p-1 rounded-2xl sm:rounded-3xl shadow-2xl"
+            className="rounded-2xl shadow-2xl border-2"
+            style={{ backgroundColor: '#ffffff', borderColor: '#dddddd' }}
           >
-            <div className="bg-gradient-to-br from-blue-600 to-purple-700 p-5 sm:p-6 md:p-8 lg:p-10 rounded-2xl sm:rounded-3xl">
-              <div className="text-center mb-4 sm:mb-5 md:mb-6">
-                <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-white mb-1 sm:mb-2">Kontaktdaten</h2>
-                <p className="text-blue-100 text-xs sm:text-sm md:text-base">Für die Gewinnbenachrichtigung</p>
+            <div className="p-5 sm:p-6 md:p-8 rounded-2xl">
+              {/* Logo zentral */}
+              <div className="flex justify-center mb-4 sm:mb-5">
+                <img src="/sweets_transparency.svg" alt="Sweets Logo" className="h-12 sm:h-14 md:h-16 w-auto" />
+              </div>
+
+              <div className="text-center mb-4 sm:mb-5">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-1" style={{ color: '#f8ab14' }}>Kontaktdaten</h2>
+                <p className="text-xs sm:text-sm" style={{ color: '#723a2b' }}>Für die Gewinnbenachrichtigung</p>
               </div>
 
               <div className="space-y-3 sm:space-y-4">
@@ -258,7 +315,8 @@ export default function GoldenTicketPage() {
                         setFormData({...formData, firstName: e.target.value});
                         setErrors({...errors, firstName: undefined});
                       }}
-                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base md:text-lg border-2 ${errors.firstName ? 'border-red-400 bg-red-50' : 'border-blue-300 bg-white'} rounded-lg sm:rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all text-gray-800`}
+                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.firstName ? 'border-red-400 bg-red-50' : 'bg-white'}`}
+                      style={!errors.firstName ? { borderColor: '#dddddd', color: '#723a2b' } : {}}
                     />
                     {errors.firstName && <p className="text-red-200 text-xs sm:text-sm mt-1 ml-1">{errors.firstName}</p>}
                   </div>
@@ -271,7 +329,8 @@ export default function GoldenTicketPage() {
                         setFormData({...formData, lastName: e.target.value});
                         setErrors({...errors, lastName: undefined});
                       }}
-                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base md:text-lg border-2 ${errors.lastName ? 'border-red-400 bg-red-50' : 'border-blue-300 bg-white'} rounded-lg sm:rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all text-gray-800`}
+                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.lastName ? 'border-red-400 bg-red-50' : 'bg-white'}`}
+                      style={!errors.lastName ? { borderColor: '#dddddd', color: '#723a2b' } : {}}
                     />
                     {errors.lastName && <p className="text-red-200 text-xs sm:text-sm mt-1 ml-1">{errors.lastName}</p>}
                   </div>
@@ -286,7 +345,8 @@ export default function GoldenTicketPage() {
                       setFormData({...formData, email: e.target.value});
                       setErrors({...errors, email: undefined});
                     }}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base md:text-lg border-2 ${errors.email ? 'border-red-400 bg-red-50' : 'border-blue-300 bg-white'} rounded-lg sm:rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all text-gray-800`}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.email ? 'border-red-400 bg-red-50' : 'bg-white'}`}
+                    style={!errors.email ? { borderColor: '#dddddd', color: '#723a2b' } : {}}
                   />
                   {errors.email && <p className="text-red-200 text-xs sm:text-sm mt-1 ml-1">{errors.email}</p>}
                 </div>
@@ -300,7 +360,8 @@ export default function GoldenTicketPage() {
                       setFormData({...formData, phone: e.target.value});
                       setErrors({...errors, phone: undefined});
                     }}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base md:text-lg border-2 ${errors.phone ? 'border-red-400 bg-red-50' : 'border-blue-300 bg-white'} rounded-lg sm:rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all text-gray-800`}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.phone ? 'border-red-400 bg-red-50' : 'bg-white'}`}
+                    style={!errors.phone ? { borderColor: '#dddddd', color: '#723a2b' } : {}}
                   />
                   {errors.phone && <p className="text-red-200 text-xs sm:text-sm mt-1 ml-1">{errors.phone}</p>}
                 </div>
@@ -314,7 +375,8 @@ export default function GoldenTicketPage() {
                       setFormData({...formData, street: e.target.value});
                       setErrors({...errors, street: undefined});
                     }}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base md:text-lg border-2 ${errors.street ? 'border-red-400 bg-red-50' : 'border-blue-300 bg-white'} rounded-lg sm:rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all text-gray-800`}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.street ? 'border-red-400 bg-red-50' : 'bg-white'}`}
+                    style={!errors.street ? { borderColor: '#dddddd', color: '#723a2b' } : {}}
                   />
                   {errors.street && <p className="text-red-200 text-xs sm:text-sm mt-1 ml-1">{errors.street}</p>}
                 </div>
@@ -329,7 +391,8 @@ export default function GoldenTicketPage() {
                         setFormData({...formData, postalCode: e.target.value});
                         setErrors({...errors, postalCode: undefined});
                       }}
-                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base md:text-lg border-2 ${errors.postalCode ? 'border-red-400 bg-red-50' : 'border-blue-300 bg-white'} rounded-lg sm:rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all text-gray-800`}
+                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.postalCode ? 'border-red-400 bg-red-50' : 'bg-white'}`}
+                      style={!errors.postalCode ? { borderColor: '#dddddd', color: '#723a2b' } : {}}
                     />
                     {errors.postalCode && <p className="text-red-200 text-xs sm:text-sm mt-1 ml-1">{errors.postalCode}</p>}
                   </div>
@@ -342,14 +405,15 @@ export default function GoldenTicketPage() {
                         setFormData({...formData, city: e.target.value});
                         setErrors({...errors, city: undefined});
                       }}
-                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base md:text-lg border-2 ${errors.city ? 'border-red-400 bg-red-50' : 'border-blue-300 bg-white'} rounded-lg sm:rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all text-gray-800`}
+                      className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.city ? 'border-red-400 bg-red-50' : 'bg-white'}`}
+                      style={!errors.city ? { borderColor: '#dddddd', color: '#723a2b' } : {}}
                     />
                     {errors.city && <p className="text-red-200 text-xs sm:text-sm mt-1 ml-1">{errors.city}</p>}
                   </div>
                 </div>
 
                 {/* GEWINNSPIEL-CHECKBOX (Pflicht) */}
-                <div className="flex items-start gap-2 sm:gap-3 bg-blue-500/20 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border border-blue-400">
+                <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border-2" style={{ backgroundColor: '#ffffff', borderColor: '#dddddd' }}>
                   <input
                     type="checkbox"
                     id="consent"
@@ -358,35 +422,37 @@ export default function GoldenTicketPage() {
                       setConsent(e.target.checked);
                       setErrors({...errors, consent: undefined});
                     }}
-                    className="mt-0.5 sm:mt-1 w-4 h-4 sm:w-5 sm:h-5 accent-blue-600"
+                    className="mt-0.5 sm:mt-1 w-4 h-4 sm:w-5 sm:h-5"
+                    style={{ accentColor: '#16b9da' }}
                   />
-                  <label htmlFor="consent" className="text-blue-100 text-[10px] sm:text-xs md:text-sm leading-tight cursor-pointer">
+                  <label htmlFor="consent" className="text-[10px] sm:text-xs leading-tight cursor-pointer" style={{ color: '#723a2b' }}>
                     Ich stimme der Verarbeitung meiner Daten zur Gewinnabwicklung zu. Hinweise in der{" "}
-                    <a href="https://sweetsausallerwelt.de/datenschutz" target="_blank" className="text-yellow-300 underline hover:text-yellow-200 font-bold">
+                    <a href="https://sweetsausallerwelt.de/datenschutz" target="_blank" className="underline hover:opacity-80 font-bold" style={{ color: '#f8ab14' }}>
                       Datenschutzerklärung
                     </a>{" "}
                     und den{" "}
-                    <a href="/teilnahmebedingungen" target="_blank" className="text-yellow-300 underline hover:text-yellow-200 font-bold">
+                    <a href="/teilnahmebedingungen" target="_blank" className="underline hover:opacity-80 font-bold" style={{ color: '#f8ab14' }}>
                       Teilnahmebedingungen
                     </a>
                     . *
                   </label>
                 </div>
-                {errors.consent && <p className="text-red-200 text-xs sm:text-sm ml-1">{errors.consent}</p>}
+                {errors.consent && <p className="text-red-600 text-xs sm:text-sm ml-1">{errors.consent}</p>}
 
                 {/* NEWSLETTER-CHECKBOX (Optional - Rechtlich getrennt!) */}
-                <div className="flex items-start gap-2 sm:gap-3 bg-green-500/20 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl border border-green-400">
+                <div className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border-2" style={{ backgroundColor: '#ffffff', borderColor: '#dddddd' }}>
                   <input
                     type="checkbox"
                     id="newsletter"
                     checked={newsletterConsent}
                     onChange={(e) => setNewsletterConsent(e.target.checked)}
-                    className="mt-0.5 sm:mt-1 w-4 h-4 sm:w-5 sm:h-5 accent-green-600"
+                    className="mt-0.5 sm:mt-1 w-4 h-4 sm:w-5 sm:h-5"
+                    style={{ accentColor: '#16b9da' }}
                   />
-                  <label htmlFor="newsletter" className="text-green-100 text-[10px] sm:text-xs md:text-sm leading-tight cursor-pointer">
+                  <label htmlFor="newsletter" className="text-[10px] sm:text-xs leading-tight cursor-pointer" style={{ color: '#723a2b' }}>
                     Ja, ich möchte zusätzlich den kostenlosen Newsletter mit exklusiven Angeboten und Neuigkeiten erhalten.
                     Die Einwilligung kann jederzeit widerrufen werden. Weitere Informationen in der{" "}
-                    <a href="https://sweetsausallerwelt.de/datenschutz" target="_blank" className="text-yellow-300 underline hover:text-yellow-200 font-bold">
+                    <a href="https://sweetsausallerwelt.de/datenschutz" target="_blank" className="underline hover:opacity-80 font-bold" style={{ color: '#f8ab14' }}>
                       Datenschutzerklärung
                     </a>.
                   </label>
@@ -395,19 +461,24 @@ export default function GoldenTicketPage() {
                 <motion.button
                   onClick={handleContactSubmit}
                   disabled={isLoading}
-                  whileHover={{ scale: isLoading ? 1 : 1.03 }}
-                  whileTap={{ scale: isLoading ? 1 : 0.97 }}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black py-3.5 sm:py-4 md:py-5 px-4 sm:px-5 md:px-6 rounded-xl sm:rounded-2xl hover:shadow-3xl transition-all disabled:opacity-50 text-sm sm:text-base md:text-lg lg:text-xl"
+                  whileHover={{ scale: isLoading ? 1 : 1.02, backgroundColor: isLoading ? '#f8ab14' : '#16b9da' }}
+                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                  className="w-full font-black py-3 sm:py-4 px-4 sm:px-5 rounded-xl hover:shadow-3xl transition-all disabled:opacity-50 text-sm sm:text-base border-2"
+                  style={{
+                    backgroundColor: '#f8ab14',
+                    color: '#ffffff',
+                    borderColor: '#f8ab14'
+                  }}
                 >
                   {isLoading ? (
-                    <span className="flex items-center justify-center gap-2 sm:gap-3">
-                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 border-2 sm:border-3 border-white border-t-transparent" />
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent" />
                       Wird gesendet...
                     </span>
                   ) : (
-                    <span className="flex items-center justify-center gap-2 sm:gap-3">
+                    <span className="flex items-center justify-center gap-2">
                       JETZT TEILNEHMEN
-                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </span>
                   )}
                 </motion.button>
@@ -460,7 +531,6 @@ export default function GoldenTicketPage() {
               }}
               className="inline-block mb-3 sm:mb-4"
             >
-              <Ticket className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 text-yellow-400" />
             </motion.div>
            
           </motion.div>

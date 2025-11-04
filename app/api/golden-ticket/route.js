@@ -134,6 +134,7 @@ export async function POST(request) {
 
     // Tags hinzufügen für Filterung
     const tags = [
+      { name: "goldenticket", status: "active" }, // HAUPTTAG für diese Seite
       { name: "gewinnspiel-teilnehmer", status: "active" },
       { name: "golden-ticket-2025", status: "active" },
       { name: source, status: "active" },
