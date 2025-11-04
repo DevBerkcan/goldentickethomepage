@@ -92,27 +92,23 @@ export async function POST(request) {
 
     const memberUrl = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${LIST_ID}/members/${subscriberHash}`;
 
-    // Für Newsletter: Kontakt mit status="pending" aktualisieren
-    // Das triggert Mailchimp's Double-Opt-In Email!
+    // Kontakt existiert bereits (wurde von Golden Ticket API erstellt)
+    // Wir ändern NUR die Tags, NICHT den Status!
 
-    console.log("🔄 Aktualisiere Kontakt für Newsletter Double-Opt-In...");
+    console.log("🔄 Hole existierenden Kontakt...");
 
-    let upsert = await fetch(memberUrl, {
-      method: "PATCH", // PATCH statt PUT - nur Status ändern!
-      headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: "pending" // Setzt auf pending → triggert Double-Opt-In Email
-      }),
+    let getContact = await fetch(memberUrl, {
+      method: "GET",
+      headers: { Authorization: `Basic ${basic}` }
     });
 
-    let upText = await upsert.text();
     let mcData = null;
-    try {
-      mcData = upText ? JSON.parse(upText) : {};
-    } catch {}
-
-    console.log("📧 Newsletter Mailchimp Response Status:", upsert.status);
-    console.log("📧 Newsletter Mailchimp Response:", mcData);
+    if (getContact.ok) {
+      mcData = await getContact.json();
+      console.log("📧 Kontakt gefunden - Status bleibt:", mcData.status);
+    } else {
+      return Response.json({ message: "Kontakt nicht gefunden" }, { status: 404 });
+    }
 
     if (!upsert.ok) {
       console.error("❌ Newsletter Mailchimp Error:", mcData || upText);
