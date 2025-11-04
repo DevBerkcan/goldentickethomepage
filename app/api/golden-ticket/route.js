@@ -20,7 +20,8 @@ export async function POST(request) {
       utm_medium,
       utm_campaign,
       consent,
-      consentTs
+      consentTs,
+      newsletterConsent = false // Newsletter-Checkbox Status
     } = data;
 
     // Validierung
@@ -151,6 +152,12 @@ export async function POST(request) {
 
     if (utm_campaign) {
       tags.push({ name: `utm_campaign_${utm_campaign}`, status: "active" });
+    }
+
+    // Newsletter-Opt-In Status als Tag speichern
+    if (newsletterConsent) {
+      tags.push({ name: "newsletter-opt-in-pending", status: "active" });
+      tags.push({ name: "newsletter-requested", status: "active" });
     }
 
     // Tags zu Mailchimp hinzufügen

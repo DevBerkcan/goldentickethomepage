@@ -154,7 +154,9 @@ export async function POST(request) {
     // Spezielle Tags für Golden Ticket Gewinnspiel
     if (source === "golden_ticket") {
       tags.push({ name: "golden-ticket-gewinnspiel", status: "active" });
-      tags.push({ name: "newsletter-opt-in", status: "active" });
+      // Nach Double-Opt-In: pending Tag entfernen und confirmed Tag setzen
+      tags.push({ name: "newsletter-opt-in-pending", status: "inactive" }); // Alten Tag entfernen
+      tags.push({ name: "newsletter-opt-in-confirmed", status: "active" }); // Bestätigt!
       if (ticketCode) {
         tags.push({ name: "ticket-code-provided", status: "active" });
       }

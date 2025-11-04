@@ -95,7 +95,8 @@ export default function GoldenTicketPage() {
         utm_medium: getUTMParameter("utm_medium") || "organic",
         utm_campaign: getUTMParameter("utm_campaign") || "golden_ticket",
         consent: true,
-        consentTs: new Date().toISOString()
+        consentTs: new Date().toISOString(),
+        newsletterConsent: newsletterConsent // Newsletter-Checkbox Status mitschicken
       }),
     });
   };
