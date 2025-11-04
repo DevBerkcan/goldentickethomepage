@@ -92,24 +92,45 @@ export async function POST(request) {
 
     const memberUrl = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${LIST_ID}/members/${subscriberHash}`;
 
-    // Erstelle den Member mit allen verfügbaren Daten
-    // Wichtig: Bei archivierten Kontakten muss "status" gesetzt werden
-    let upsert = await fetch(memberUrl, {
-      method: "PUT",
-      headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email_address: email,
-        status_if_new: statusIfNew,
-        status: statusIfNew, // Reaktiviert archivierte Kontakte
-        merge_fields
-      }),
+    // WICHTIG: Wir ändern NICHT den Status, nur die Tags!
+    // Der Kontakt wurde bereits von der Golden Ticket API mit status="subscribed" erstellt
+    // Wir fügen nur Tags hinzu um die Newsletter-Bestätigung zu tracken
+
+    // Zuerst prüfen ob der Kontakt existiert
+    let getContact = await fetch(memberUrl, {
+      method: "GET",
+      headers: { Authorization: `Basic ${basic}` }
     });
 
-    const upText = await upsert.text();
+    let contactExists = getContact.ok;
+
+    // Nur wenn Kontakt NICHT existiert, erstellen wir ihn mit pending
+    let upsert = null;
+    if (!contactExists) {
+      upsert = await fetch(memberUrl, {
+        method: "PUT",
+        headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email_address: email,
+          status_if_new: "pending",
+          merge_fields
+        }),
+      });
+    } else {
+      // Kontakt existiert bereits - wir müssen nichts tun, nur Tags setzen
+      upsert = { ok: true, status: 200 };
+    }
+
+    let upText = "";
     let mcData = null;
-    try {
-      mcData = upText ? JSON.parse(upText) : {};
-    } catch {}
+    if (upsert && typeof upsert.text === 'function') {
+      upText = await upsert.text();
+      try {
+        mcData = upText ? JSON.parse(upText) : {};
+      } catch {}
+    } else {
+      mcData = await getContact.json(); // Verwende existierenden Kontakt
+    }
 
     console.log("📧 Newsletter Mailchimp Response Status:", upsert.status);
     console.log("📧 Newsletter Mailchimp Response:", mcData);
@@ -145,42 +166,14 @@ export async function POST(request) {
       }
     }
 
-    // Tags basierend auf bereitgestellten Daten erstellen
-    const tags = [
-      { name: "website-signup", status: "active" },
-      { name: source, status: "active" }
-    ];
+    // NUR die wichtigsten Tags für Newsletter-Bestätigung
+    const tags = [];
 
     // Spezielle Tags für Golden Ticket Gewinnspiel
     if (source === "golden_ticket") {
-      tags.push({ name: "golden-ticket-gewinnspiel", status: "active" });
       // Nach Double-Opt-In: pending Tag entfernen und confirmed Tag setzen
       tags.push({ name: "newsletter-opt-in-pending", status: "inactive" }); // Alten Tag entfernen
       tags.push({ name: "newsletter-opt-in-confirmed", status: "active" }); // Bestätigt!
-      if (ticketCode) {
-        tags.push({ name: "ticket-code-provided", status: "active" });
-      }
-    }
-
-    if (source === "hero_dubai_offer" || source === "hero_offer") {
-      tags.push({ name: "dubai_chocolate", status: "active" });
-    }
-
-    if (offer) {
-      tags.push({ name: String(offer).toLowerCase().replace(/\s+/g, "_"), status: "active" });
-    }
-
-    // Adress-Tag hinzufügen, wenn Adresse bereitgestellt wurde
-    if (street || city || postalCode) {
-      tags.push({ name: "address_provided", status: "active" });
-    }
-
-    // UTM-basierte Tags
-    if (utm_source) {
-      tags.push({ name: `utm_source_${utm_source}`, status: "active" });
-    }
-    if (utm_campaign) {
-      tags.push({ name: `utm_campaign_${utm_campaign}`, status: "active" });
     }
 
     const tagsRes = await fetch(`${memberUrl}/tags`, {

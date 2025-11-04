@@ -78,25 +78,27 @@ export async function POST(request) {
     if (utm_medium) merge_fields.MMERGE12 = utm_medium; // UTM_MEDIUM (Merge Tag 12)
     if (utm_campaign) merge_fields.MMERGE13 = utm_campaign; // UTM_CAMPAIGN (Merge Tag 13)
 
-    // Adresse in mehreren Formaten speichern
-    const fullAddress = [];
-    if (street) fullAddress.push(street);
-    if (postalCode) fullAddress.push(postalCode);
-    if (city) fullAddress.push(city);
-    if (country && country !== "DE") fullAddress.push(country);
+    // Adresse MUSS strukturiert sein! (siehe Mailchimp Felder-Konfiguration)
+    if (street || city || postalCode) {
+      // Haupt-ADDRESS Feld (MERGE3) als strukturiertes Objekt
+      merge_fields.ADDRESS = {
+        addr1: street || "",
+        addr2: "",
+        city: city || "",
+        state: "", // Bundesland - für Deutschland meist leer
+        zip: postalCode || "",
+        country: country || "DE"
+      };
 
-    const addressString = fullAddress.join(", ");
-
-    // Versuche alle möglichen Adressfelder
-    if (addressString) {
-      merge_fields.ADDRESS = addressString; // Standard ADDRESS als Text
-      merge_fields.MMERGE14 = addressString; // MMERGE14 (zweites ADDRESS-Feld)
-
-      // Auch strukturierte Adresse probieren
-      merge_fields.ADDR1 = street || "";
-      merge_fields.CITY = city || "";
-      merge_fields.ZIP = postalCode || "";
-      merge_fields.COUNTRY = country || "DE";
+      // MMERGE14 (zweites ADDRESS-Feld) auch strukturiert
+      merge_fields.MMERGE14 = {
+        addr1: street || "",
+        addr2: "",
+        city: city || "",
+        state: "",
+        zip: postalCode || "",
+        country: country || "DE"
+      };
     }
 
     const memberUrl = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${LIST_ID}/members/${subscriberHash}`;
@@ -144,31 +146,14 @@ export async function POST(request) {
       );
     }
 
-    // Tags hinzufügen für Filterung
+    // NUR die wichtigsten Tags - aufgeräumt!
     const tags = [
-      { name: "goldenticket", status: "active" }, // HAUPTTAG für diese Seite
-      { name: "gewinnspiel-teilnehmer", status: "active" },
-      { name: "golden-ticket-2025", status: "active" },
-      { name: source, status: "active" },
-      { name: `ticket-${ticketCode.substring(0, 3)}`, status: "active" } // Erste 3 Zeichen als Tag
+      { name: "goldenticket", status: "active" } // HAUPTTAG für diese Seite
     ];
-
-    if (street || city || postalCode) {
-      tags.push({ name: "address-provided", status: "active" });
-    }
-
-    if (utm_source) {
-      tags.push({ name: `utm_source_${utm_source}`, status: "active" });
-    }
-
-    if (utm_campaign) {
-      tags.push({ name: `utm_campaign_${utm_campaign}`, status: "active" });
-    }
 
     // Newsletter-Opt-In Status als Tag speichern
     if (newsletterConsent) {
       tags.push({ name: "newsletter-opt-in-pending", status: "active" });
-      tags.push({ name: "newsletter-requested", status: "active" });
     }
 
     // Tags zu Mailchimp hinzufügen
@@ -183,6 +168,32 @@ export async function POST(request) {
 
     if (!tagsResponse.ok) {
       console.error("Tags konnten nicht hinzugefügt werden:", await tagsResponse.text());
+    }
+
+    // Adresse als NOTE speichern (da Merge Fields nicht funktionieren)
+    if (street || city || postalCode || phone) {
+      const noteText = `
+📍 Adresse: ${street || '-'}, ${postalCode || '-'} ${city || '-'}${country && country !== 'DE' ? ', ' + country : ''}
+📞 Telefon: ${phone || '-'}
+🎫 Ticket-Code: ${ticketCode}
+📅 Teilnahme: ${new Date().toLocaleString('de-DE')}
+      `.trim();
+
+      try {
+        await fetch(`${memberUrl}/notes`, {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${basic}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            note: noteText
+          })
+        });
+        console.log("✅ Adresse als Note gespeichert");
+      } catch (noteError) {
+        console.error("⚠️ Note konnte nicht gespeichert werden:", noteError);
+      }
     }
 
     console.log("✅ Golden Ticket Teilnahme in Mailchimp gespeichert:", {
