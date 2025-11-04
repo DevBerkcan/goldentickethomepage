@@ -66,9 +66,10 @@ export async function POST(request) {
     const merge_fields = {
       FNAME: firstName || "",
       LNAME: lastName || "",
-      MMERGE7: phone || "", // PHONE als Text (Merge Tag 7)
+      PHONE: phone || "", // Standard PHONE Feld
+      MMERGE7: phone || "", // PHONE als Text (Merge Tag 7) - Backup
       MMERGE8: ticketCode || "", // TICKET (Merge Tag 8)
-      MMERGE9: offer || "Adventskalender 5", // OFFER (Merge Tag 9)
+      MMERGE9: offer || "Adventskalender 2025", // OFFER (Merge Tag 9)
       MMERGE10: source, // SOURCE (Merge Tag 10)
     };
 
@@ -77,15 +78,25 @@ export async function POST(request) {
     if (utm_medium) merge_fields.MMERGE12 = utm_medium; // UTM_MEDIUM (Merge Tag 12)
     if (utm_campaign) merge_fields.MMERGE13 = utm_campaign; // UTM_CAMPAIGN (Merge Tag 13)
 
-    // Adresse als TEXT speichern in MMERGE14 (das zweite ADDRESS-Feld)
-    // Vermeidet Probleme mit dem strukturierten ADDRESS-Feld
-    if (street || city || postalCode) {
-      const addressParts = [];
-      if (street) addressParts.push(street);
-      if (postalCode) addressParts.push(postalCode);
-      if (city) addressParts.push(city);
-      if (country && country !== "DE") addressParts.push(country);
-      merge_fields.MMERGE14 = addressParts.join(", ");
+    // Adresse in mehreren Formaten speichern
+    const fullAddress = [];
+    if (street) fullAddress.push(street);
+    if (postalCode) fullAddress.push(postalCode);
+    if (city) fullAddress.push(city);
+    if (country && country !== "DE") fullAddress.push(country);
+
+    const addressString = fullAddress.join(", ");
+
+    // Versuche alle möglichen Adressfelder
+    if (addressString) {
+      merge_fields.ADDRESS = addressString; // Standard ADDRESS als Text
+      merge_fields.MMERGE14 = addressString; // MMERGE14 (zweites ADDRESS-Feld)
+
+      // Auch strukturierte Adresse probieren
+      merge_fields.ADDR1 = street || "";
+      merge_fields.CITY = city || "";
+      merge_fields.ZIP = postalCode || "";
+      merge_fields.COUNTRY = country || "DE";
     }
 
     const memberUrl = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${LIST_ID}/members/${subscriberHash}`;
