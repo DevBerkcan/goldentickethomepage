@@ -92,45 +92,24 @@ export async function POST(request) {
 
     const memberUrl = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${LIST_ID}/members/${subscriberHash}`;
 
-    // WICHTIG: Wir ändern NICHT den Status, nur die Tags!
-    // Der Kontakt wurde bereits von der Golden Ticket API mit status="subscribed" erstellt
-    // Wir fügen nur Tags hinzu um die Newsletter-Bestätigung zu tracken
+    // Für Newsletter: Kontakt mit status="pending" aktualisieren
+    // Das triggert Mailchimp's Double-Opt-In Email!
 
-    // Zuerst prüfen ob der Kontakt existiert
-    let getContact = await fetch(memberUrl, {
-      method: "GET",
-      headers: { Authorization: `Basic ${basic}` }
+    console.log("🔄 Aktualisiere Kontakt für Newsletter Double-Opt-In...");
+
+    let upsert = await fetch(memberUrl, {
+      method: "PATCH", // PATCH statt PUT - nur Status ändern!
+      headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: "pending" // Setzt auf pending → triggert Double-Opt-In Email
+      }),
     });
 
-    let contactExists = getContact.ok;
-
-    // Nur wenn Kontakt NICHT existiert, erstellen wir ihn mit pending
-    let upsert = null;
-    if (!contactExists) {
-      upsert = await fetch(memberUrl, {
-        method: "PUT",
-        headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email_address: email,
-          status_if_new: "pending",
-          merge_fields
-        }),
-      });
-    } else {
-      // Kontakt existiert bereits - wir müssen nichts tun, nur Tags setzen
-      upsert = { ok: true, status: 200 };
-    }
-
-    let upText = "";
+    let upText = await upsert.text();
     let mcData = null;
-    if (upsert && typeof upsert.text === 'function') {
-      upText = await upsert.text();
-      try {
-        mcData = upText ? JSON.parse(upText) : {};
-      } catch {}
-    } else {
-      mcData = await getContact.json(); // Verwende existierenden Kontakt
-    }
+    try {
+      mcData = upText ? JSON.parse(upText) : {};
+    } catch {}
 
     console.log("📧 Newsletter Mailchimp Response Status:", upsert.status);
     console.log("📧 Newsletter Mailchimp Response:", mcData);
@@ -166,35 +145,9 @@ export async function POST(request) {
       }
     }
 
-    // NUR die wichtigsten Tags für Newsletter-Bestätigung
-    const tags = [];
-
-    // Spezielle Tags für Golden Ticket Gewinnspiel
-    if (source === "golden_ticket") {
-      // Nach Double-Opt-In: pending Tag entfernen und confirmed Tag setzen
-      tags.push({ name: "newsletter-opt-in-pending", status: "inactive" }); // Alten Tag entfernen
-      tags.push({ name: "newsletter-opt-in-confirmed", status: "active" }); // Bestätigt!
-    }
-
-    const tagsRes = await fetch(`${memberUrl}/tags`, {
-      method: "POST",
-      headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ tags }),
-    });
-
-    let tagsWarning;
-    if (!tagsRes.ok) {
-      try {
-        tagsWarning = await tagsRes.json();
-      } catch {
-        tagsWarning = { error: "Failed to parse tags response" };
-      }
-    }
-
-    console.log("✅ Newsletter Anmeldung in Mailchimp gespeichert:", {
+    console.log("✅ Newsletter Double-Opt-In Email versendet:", {
       email,
-      source,
-      tags: tags.map(t => t.name)
+      status: "pending - wartet auf Bestätigung"
     });
 
     // Response erstellen
