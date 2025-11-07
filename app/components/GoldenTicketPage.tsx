@@ -228,13 +228,6 @@ export default function GoldenTicketPage() {
             </p>
             {newsletterConsentRef.current && (
               <>
-                <hr style={{ borderColor: '#dddddd', margin: '12px 0' }} />
-                <p className="font-bold" style={{ color: '#f8ab14' }}>
-                  📬 Zweite Email: Newsletter-Bestätigung
-                </p>
-                <p>
-                  Du erhältst eine <strong>separate Email</strong> mit einem Link zur Aktivierung deines Newsletters.
-                </p>
                 <p className="font-bold" style={{ color: '#dc2626' }}>
                   ⚠️ Wichtig: Prüfe auch deinen SPAM-Ordner und klicke auf den Bestätigungslink!
                 </p>
