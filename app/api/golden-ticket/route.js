@@ -1,4 +1,7 @@
 import crypto from "crypto";
+import mailchimp from "@mailchimp/mailchimp_transactional";
+
+const mandrillClient = mailchimp(process.env.MAILCHIMP_TRANSACTIONAL_API_KEY);
 
 export async function POST(request) {
   try {
@@ -201,6 +204,235 @@ export async function POST(request) {
       ticketCode,
       tags: tags.map(t => t.name)
     });
+
+    // EMAILS VERSENDEN via Mailchimp Transactional (Mandrill)
+    // ZWEI separate Emails!
+    try {
+      console.log("📧 Starte Email-Versand...");
+      console.log("📧 Mailchimp Transactional API Key vorhanden?", !!process.env.MAILCHIMP_TRANSACTIONAL_API_KEY);
+      console.log("📧 Newsletter Consent:", newsletterConsent);
+
+      // EMAIL 1: Gewinnspiel-Bestätigung (IMMER senden)
+      console.log("📧 Sende Email 1: Gewinnspiel-Bestätigung an", email);
+
+      const result1 = await mandrillClient.messages.send({
+        message: {
+          from_email: "noreply@sweetsausallerwelt.de",
+          from_name: "Sweets aus aller Welt",
+          to: [{ email, name: `${firstName} ${lastName}`.trim() || email }],
+          subject: "🎫 Du bist jetzt im Lostopf!",
+          html: `
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <style>
+                  body {
+                    font-family: system-ui, -apple-system, sans-serif;
+                    line-height: 1.6;
+                    color: #723a2b;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    padding: 20px;
+                  }
+                  .container {
+                    background: linear-gradient(135deg, #f8ab14 0%, #16b9da 100%);
+                    padding: 40px;
+                    border-radius: 20px;
+                  }
+                  .content {
+                    background: white;
+                    padding: 30px;
+                    border-radius: 15px;
+                  }
+                  h1 {
+                    color: #f8ab14;
+                    margin-top: 0;
+                  }
+                  .ticket-code {
+                    background: #fff8e1;
+                    border-left: 4px solid #f8ab14;
+                    padding: 15px;
+                    margin: 20px 0;
+                    font-size: 20px;
+                    font-weight: bold;
+                    text-align: center;
+                    letter-spacing: 3px;
+                  }
+                  .highlight {
+                    background: #e8f5e9;
+                    border-left: 4px solid #16b9da;
+                    padding: 15px;
+                    margin: 20px 0;
+                  }
+                  .footer {
+                    margin-top: 30px;
+                    padding-top: 20px;
+                    border-top: 1px solid #dddddd;
+                    font-size: 12px;
+                    color: #666;
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="content">
+                    <h1>🎫 Glückwunsch ${firstName || ''}!</h1>
+
+                    <p>Deine Teilnahme am <strong>Golden Ticket Gewinnspiel</strong> wurde erfolgreich registriert!</p>
+
+                    <div class="ticket-code">
+                      ${ticketCode}
+                    </div>
+
+                    <div class="highlight">
+                      <strong>🎉 Du bist jetzt im Lostopf!</strong><br>
+                      Wir benachrichtigen dich per Email, wenn du gewonnen hast.
+                    </div>
+
+                    <p><strong>Was passiert jetzt?</strong></p>
+                    <ul>
+                      <li>✅ Deine Teilnahme ist gespeichert</li>
+                      <li>🎁 Wir ziehen die Gewinner und informieren dich per Email</li>
+                      <li>🍬 Viel Glück!</li>
+                    </ul>
+
+                    <p>Vielen Dank für deine Teilnahme und viel Erfolg! 🎉</p>
+
+                    <div class="footer">
+                      <p>© ${new Date().getFullYear()} Sweets aus aller Welt<br>
+                      <a href="https://sweetsausallerwelt.de">sweetsausallerwelt.de</a></p>
+                    </div>
+                  </div>
+                </div>
+              </body>
+            </html>
+          `
+        }
+      });
+
+      console.log("✅ Email 1 Result:", JSON.stringify(result1, null, 2));
+      console.log("✅ Gewinnspiel-Bestätigungsmail versendet an:", email);
+
+      // EMAIL 2: Newsletter Double-Opt-In (NUR wenn Checkbox aktiviert)
+      if (newsletterConsent) {
+        console.log("📧 Sende Email 2: Newsletter-DOI an", email);
+        const confirmationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/newsletter/confirm?email=${encodeURIComponent(email)}&token=${Buffer.from(email).toString('base64')}`;
+
+        const result2 = await mandrillClient.messages.send({
+          message: {
+            from_email: "noreply@sweetsausallerwelt.de",
+            from_name: "Sweets aus aller Welt",
+            to: [{ email, name: `${firstName} ${lastName}`.trim() || email }],
+            subject: "📬 Bestätige deine Newsletter-Anmeldung",
+            html: `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <style>
+                    body {
+                      font-family: system-ui, -apple-system, sans-serif;
+                      line-height: 1.6;
+                      color: #723a2b;
+                      max-width: 600px;
+                      margin: 0 auto;
+                      padding: 20px;
+                    }
+                    .container {
+                      background: linear-gradient(135deg, #f8ab14 0%, #16b9da 100%);
+                      padding: 40px;
+                      border-radius: 20px;
+                    }
+                    .content {
+                      background: white;
+                      padding: 30px;
+                      border-radius: 15px;
+                    }
+                    h1 {
+                      color: #f8ab14;
+                      margin-top: 0;
+                    }
+                    .button {
+                      display: inline-block;
+                      padding: 15px 30px;
+                      background: #f8ab14;
+                      color: white !important;
+                      text-decoration: none;
+                      border-radius: 10px;
+                      font-weight: bold;
+                      margin: 20px 0;
+                    }
+                    .button:hover {
+                      background: #16b9da;
+                    }
+                    .warning {
+                      background: #fff8e1;
+                      border-left: 4px solid #dc2626;
+                      padding: 15px;
+                      margin: 20px 0;
+                    }
+                    .footer {
+                      margin-top: 30px;
+                      padding-top: 20px;
+                      border-top: 1px solid #dddddd;
+                      font-size: 12px;
+                      color: #666;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div class="container">
+                    <div class="content">
+                      <h1>📬 Bestätige deine Newsletter-Anmeldung</h1>
+
+                      <p>Hallo ${firstName || 'lieber Kunde'},</p>
+
+                      <p>vielen Dank für deine Anmeldung zu unserem Newsletter! Um deine Anmeldung abzuschließen, bestätige bitte deine Email-Adresse:</p>
+
+                      <center>
+                        <a href="${confirmationUrl}" class="button">
+                          ✓ Jetzt Newsletter aktivieren
+                        </a>
+                      </center>
+
+                      <div class="warning">
+                        <strong>⚠️ Wichtig:</strong> Falls diese Email in deinem <strong>SPAM-Ordner</strong> gelandet ist, markiere sie bitte als "Kein Spam" und füge unsere Adresse zu deinen Kontakten hinzu.
+                      </div>
+
+                      <p>Nach der Bestätigung erhältst du regelmäßig:</p>
+                      <ul>
+                        <li>🍬 Leckere Neuigkeiten aus aller Welt</li>
+                        <li>🎁 Exklusive Angebote</li>
+                        <li>✨ Besondere Aktionen</li>
+                      </ul>
+
+                      <div class="footer">
+                        <p>Falls du dich nicht angemeldet hast, kannst du diese Email ignorieren.</p>
+                        <p>© ${new Date().getFullYear()} Sweets aus aller Welt<br>
+                        <a href="https://sweetsausallerwelt.de">sweetsausallerwelt.de</a></p>
+                      </div>
+                    </div>
+                  </div>
+                </body>
+              </html>
+            `
+          }
+        });
+
+        console.log("✅ Email 2 Result:", JSON.stringify(result2, null, 2));
+        console.log("✅ Newsletter-DOI-Email versendet an:", email);
+      }
+
+    } catch (emailError) {
+      console.error("❌ EMAIL-VERSAND FEHLGESCHLAGEN:", emailError);
+      console.error("❌ Error Message:", emailError.message);
+      console.error("❌ Error Stack:", emailError.stack);
+      if (emailError.response) {
+        console.error("❌ Mailchimp Response:", emailError.response.body);
+      }
+      // Fehler nicht durchreichen - Teilnahme ist erfolgreich gespeichert
+    }
 
     return Response.json({
       success: true,

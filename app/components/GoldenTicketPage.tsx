@@ -69,6 +69,7 @@ export default function GoldenTicketPage() {
   const [mounted, setMounted] = useState(false);
   const submittedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const newsletterConsentRef = useRef(false); // Speichert Newsletter-Status für Success Screen
 
   useEffect(() => {
     setMounted(true);
@@ -148,38 +149,14 @@ export default function GoldenTicketPage() {
     setErrors({});
     try {
       submittedRef.current = true;
+      newsletterConsentRef.current = newsletterConsent; // Status für Success Screen speichern
+
       const res = await callGoldenTicketAPI(formData);
       if (!res.ok) throw new Error("Registrierung fehlgeschlagen");
 
-      // Wenn Newsletter-Checkbox aktiviert wurde, Daten an Mailchimp senden
-      if (newsletterConsent) {
-        try {
-          await fetch("/api/newsletter", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: formData.email,
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              phone: formData.phone,
-              ticketCode: formData.ticketCode,
-              street: formData.street,
-              city: formData.city,
-              postalCode: formData.postalCode,
-              country: formData.country,
-              source: "golden_ticket",
-              offer: "Adventskalender 2025",
-              utm_source: getUTMParameter("utm_source") || "direct",
-              utm_medium: getUTMParameter("utm_medium") || "organic",
-              utm_campaign: getUTMParameter("utm_campaign") || "golden_ticket",
-              statusIfNew: "pending" // Double-Opt-In
-            }),
-          });
-        } catch (newsletterError) {
-          console.error("Newsletter-Anmeldung fehlgeschlagen:", newsletterError);
-          // Fehler wird nicht angezeigt, da Gewinnspiel-Teilnahme erfolgreich war
-        }
-      }
+      // Golden Ticket API versendet automatisch:
+      // 1. Gewinnspiel-Bestätigungsmail (IMMER)
+      // 2. Newsletter-DOI-Email (wenn Checkbox aktiviert)
 
       setStep("confirmation");
     } catch (error) {
@@ -194,15 +171,19 @@ export default function GoldenTicketPage() {
   if (step === "confirmation") {
     return (
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 lg:py-12">
-        {/* Vollbild-Hintergrund */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/Goldenticket_referenz.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        />
+        {/* Vollbild-Hintergrund - Responsive: Mobile (Goldenticket_referenz.png) / Desktop (desktop_view.png) */}
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat">
+          {/* Mobile Background */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
+            style={{ backgroundImage: 'url(/Goldenticket_referenz.png)' }}
+          />
+          {/* Desktop Background */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
+            style={{ backgroundImage: 'url(/desktop_view.png)' }}
+          />
+        </div>
 
         {/* Helles Overlay für bessere Lesbarkeit */}
         <div className="absolute inset-0 bg-white/40 backdrop-blur-sm" style={{ zIndex: 5 }} />
@@ -245,6 +226,20 @@ export default function GoldenTicketPage() {
             <p>
               🎁 Wir benachrichtigen dich, wenn du gewonnen hast!
             </p>
+            {newsletterConsentRef.current && (
+              <>
+                <hr style={{ borderColor: '#dddddd', margin: '12px 0' }} />
+                <p className="font-bold" style={{ color: '#f8ab14' }}>
+                  📬 Zweite Email: Newsletter-Bestätigung
+                </p>
+                <p>
+                  Du erhältst eine <strong>separate Email</strong> mit einem Link zur Aktivierung deines Newsletters.
+                </p>
+                <p className="font-bold" style={{ color: '#dc2626' }}>
+                  ⚠️ Wichtig: Prüfe auch deinen SPAM-Ordner und klicke auf den Bestätigungslink!
+                </p>
+              </>
+            )}
           </div>
 
           {/* Button - #f8ab14 Background, #ffffff Text, Hover: #16b9da */}
@@ -270,15 +265,19 @@ export default function GoldenTicketPage() {
   if (step === "contact") {
     return (
       <div className="relative min-h-screen overflow-hidden px-3 sm:px-4 md:px-6 py-6 sm:py-8 lg:py-12">
-        {/* Vollbild-Hintergrund */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/Goldenticket_referenz.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        />
+        {/* Vollbild-Hintergrund - Responsive: Mobile (Goldenticket_referenz.png) / Desktop (desktop_view.png) */}
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat">
+          {/* Mobile Background */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
+            style={{ backgroundImage: 'url(/Goldenticket_referenz.png)' }}
+          />
+          {/* Desktop Background */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
+            style={{ backgroundImage: 'url(/desktop_view.png)' }}
+          />
+        </div>
 
         {/* Schneeflocken Animation */}
         <div className="absolute inset-0 pointer-events-none z-10">
@@ -494,15 +493,19 @@ export default function GoldenTicketPage() {
   // CODE ENTRY SCREEN (Default)
   return (
     <div className="relative overflow-hidden min-h-screen">
-      {/* Vollbild-Hintergrund */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(/Goldenticket_referenz.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      />
+      {/* Vollbild-Hintergrund - Responsive: Mobile (Goldenticket_referenz.png) / Desktop (desktop_view.png) */}
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat">
+        {/* Mobile Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
+          style={{ backgroundImage: 'url(/Goldenticket_referenz.png)' }}
+        />
+        {/* Desktop Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
+          style={{ backgroundImage: 'url(/desktop_view.png)' }}
+        />
+      </div>
 
       {/* Schneeflocken Animation */}
       <div className="absolute inset-0 pointer-events-none z-10">
