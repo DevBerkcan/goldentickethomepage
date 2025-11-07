@@ -540,13 +540,13 @@ export default function GoldenTicketPage() {
           </motion.div>
 
           {/* Container für Code-Eingabe */}
-          <div className="relative w-full max-w-[380px] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto flex items-end justify-center pb-4 sm:pb-6 md:pb-8" style={{ minHeight: '65vh' }}>
+          <div className="relative w-full max-w-[380px] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto flex items-end justify-center pb-4 sm:pb-6 md:pb-8 lg:pb-3" style={{ minHeight: '70vh' }}>
             {/* CODE EINGABE */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="relative z-20 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px]"
+              className="relative z-20 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[420px] lg:max-w-[480px]"
             >
               <div className="bg-white/10 backdrop-blur-sm p-1 rounded-2xl sm:rounded-3xl shadow-2xl">
                 <div className="bg-white/95 p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl">
