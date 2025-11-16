@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, AlertCircle } from "lucide-react";
+import { ChevronRight, AlertCircle, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface FormData {
@@ -67,6 +67,7 @@ export default function GoldenTicketPage() {
   const [consent, setConsent] = useState(false);
   const [newsletterConsent, setNewsletterConsent] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [infoExpanded, setInfoExpanded] = useState(false);
   const submittedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const newsletterConsentRef = useRef(false); // Speichert Newsletter-Status für Success Screen
@@ -548,6 +549,8 @@ export default function GoldenTicketPage() {
                     <p className="text-gray-600 text-xs sm:text-sm">8-stelliger Code</p>
                   </div>
 
+                 
+
                   <div className="space-y-3 sm:space-y-4">
                     <div className="relative">
                       <input
@@ -618,6 +621,93 @@ export default function GoldenTicketPage() {
                         </a>
                       </p>
                     </div>
+                   {/* Aufklappbare Info-Box */}
+<motion.div
+  className="mb-3 sm:mb-4 bg-gradient-to-r from-yellow-50 to-blue-50 rounded-xl overflow-hidden border border-yellow-200"
+  initial={false}
+>
+  <div className="p-3 sm:p-4">
+    <div className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+      <AnimatePresence mode="wait">
+        {!infoExpanded ? (
+          <motion.div
+            key="collapsed"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <p className="font-semibold text-gray-800 mb-1">So funktioniert's:</p>
+            <p className="line-clamp-2">
+              In ausgewählten „Sweets aus aller Welt"-Produkten verstecken sich Golden Tickets mit einem individuellen Code...
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="expanded"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="font-bold text-gray-800 mb-2">So funktioniert's:</p>
+
+            <div className="space-y-2 sm:space-y-3">
+              <div>
+                <p className="font-semibold text-yellow-700">1. Golden Ticket finden</p>
+                <p className="text-xs sm:text-sm">In ausgewählten Produkten verstecken sich Golden Tickets mit Code.</p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-yellow-700">2. Code eingeben</p>
+                <p className="text-xs sm:text-sm">Gib deinen Code hier ein und fülle das Formular aus.</p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-yellow-700">3. Im Lostopf sein</p>
+                <p className="text-xs sm:text-sm">Dein Ticket nimmt an Verlosungen vom <strong>01.11.2025 bis 24.12.2025</strong> teil.</p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-yellow-700">4. Gewinnbenachrichtigung</p>
+                <p className="text-xs sm:text-sm">Gewinner werden in Livestreams gezogen und per E-Mail informiert.</p>
+              </div>
+
+              <div className="pt-2 border-t border-gray-200">
+                <p className="text-[10px] sm:text-xs text-gray-500">
+                  Es gelten die{" "}
+                  <a href="/teilnahmebedingungen" target="_blank" className="text-yellow-700 underline hover:text-yellow-800">
+                    Teilnahmebedingungen
+                  </a>
+                  {" "}und unsere{" "}
+                  <a href="https://sweetsausallerwelt.de/datenschutz" target="_blank" className="text-yellow-700 underline hover:text-yellow-800">
+                    Datenschutzerklärung
+                  </a>.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+
+    {/* Aufklapp-Button */}
+    <motion.button
+      onClick={() => setInfoExpanded(!infoExpanded)}
+      className="mt-2 flex items-center justify-center gap-1 text-xs sm:text-sm font-semibold text-yellow-700 hover:text-yellow-800 transition-colors w-full"
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      {infoExpanded ? "Weniger anzeigen" : "Mehr erfahren"}
+      <motion.div
+        animate={{ rotate: infoExpanded ? 180 : 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <ChevronDown className="w-4 h-4" />
+      </motion.div>
+    </motion.button>
+  </div>
+</motion.div>
                   </div>
                 </div>
               </div>
