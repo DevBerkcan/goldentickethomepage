@@ -201,22 +201,47 @@ async function trackKlaviyoEvent(profileId, eventName, properties) {
 }
 
 /**
- * Fügt Profile zu Klaviyo Liste hinzu (für Newsletter)
- * Verwendet die Members API für direkte List-Subscription
+ * Abonniert Profile für Newsletter mit Double-Opt-In
+ * Verwendet die Subscription Bulk Create API für Double-Opt-In Flow
  */
 async function subscribeToKlaviyoList(profileId, email) {
-  console.log(`📬 Füge Profile ${profileId} zu Liste ${KLAVIYO_LIST_ID} hinzu`);
+  console.log(`📬 Starte Newsletter-Anmeldung für ${email} (Double-Opt-In)`);
 
   const payload = {
-    data: [
-      {
-        type: 'profile',
-        id: profileId
+    data: {
+      type: 'profile-subscription-bulk-create-job',
+      attributes: {
+        custom_source: 'Rubbellos Website',
+        profiles: {
+          data: [
+            {
+              type: 'profile',
+              attributes: {
+                email: email.toLowerCase().trim(),
+                subscriptions: {
+                  email: {
+                    marketing: {
+                      consent: 'PENDING_DOUBLE_OPT_IN'  // Trigger Double-Opt-In Email
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      relationships: {
+        list: {
+          data: {
+            type: 'list',
+            id: KLAVIYO_LIST_ID
+          }
+        }
       }
-    ]
+    }
   };
 
-  const response = await fetch(`${KLAVIYO_API_BASE}/lists/${KLAVIYO_LIST_ID}/relationships/profiles/`, {
+  const response = await fetch(`${KLAVIYO_API_BASE}/profile-subscription-bulk-create-jobs/`, {
     method: 'POST',
     headers: {
       'Authorization': `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
@@ -228,22 +253,22 @@ async function subscribeToKlaviyoList(profileId, email) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('❌ Klaviyo List Subscription Error:', response.status, errorText);
+    console.error('❌ Klaviyo Double-Opt-In Error:', response.status, errorText);
     return null;
   }
 
-  // 204 No Content = Success
-  if (response.status === 204) {
-    console.log('✅ Profile zu Liste hinzugefügt (204 No Content)');
+  // 202 Accepted = Job created successfully
+  if (response.status === 202) {
+    console.log('✅ Double-Opt-In Email wird versendet (202 Accepted)');
     return true;
   }
 
   try {
     const result = await response.json();
-    console.log('✅ Profile zu Liste hinzugefügt:', result);
+    console.log('✅ Newsletter-Anmeldung gestartet:', result);
     return true;
   } catch (e) {
-    console.log('✅ Profile zu Liste hinzugefügt (no response body)');
+    console.log('✅ Newsletter-Anmeldung gestartet (no response body)');
     return true;
   }
 }
