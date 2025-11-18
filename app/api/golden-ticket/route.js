@@ -13,8 +13,11 @@ async function createOrUpdateKlaviyoProfile(data) {
   // Normalize phone number: E.164 Format für Klaviyo
   let phoneNumber = '';
   if (phone && phone.trim()) {
-    // 1. Entferne alle Leerzeichen, Bindestriche, Klammern
-    let cleanedPhone = phone.replace(/[\s\-\(\)]/g, '').trim();
+    console.log(`📞 Original Telefonnummer: "${phone}"`);
+
+    // 1. Entferne alle Leerzeichen, Bindestriche, Klammern und Punkte
+    let cleanedPhone = phone.replace(/[\s\-\(\)\.]/g, '');
+    console.log(`📞 Nach Bereinigung: "${cleanedPhone}"`);
 
     // 2. Stelle sicher, dass die Nummer mit + beginnt
     if (!cleanedPhone.startsWith('+')) {
@@ -24,16 +27,26 @@ async function createOrUpdateKlaviyoProfile(data) {
       } else if (cleanedPhone.startsWith('49')) {
         cleanedPhone = '+' + cleanedPhone;
       } else {
+        // Falls die Nummer nicht mit 0 oder 49 beginnt, trotzdem +49 hinzufügen
         cleanedPhone = '+49' + cleanedPhone;
       }
     }
+    console.log(`📞 Nach Präfix-Normalisierung: "${cleanedPhone}"`);
 
-    // 3. Nur wenn die Nummer valide aussieht (mindestens 10 Zeichen nach +), speichern
-    if (cleanedPhone.length >= 11 && /^\+\d+$/.test(cleanedPhone)) {
+    // 3. Validierung: Mindestens 10 Ziffern nach +49 (typische deutsche Nummern)
+    // Deutsche Nummern: +49 + 10-11 Ziffern = 13-14 Zeichen total
+    const isValidFormat = /^\+\d+$/.test(cleanedPhone);
+    const isValidLength = cleanedPhone.length >= 12 && cleanedPhone.length <= 17;
+
+    if (isValidFormat && isValidLength) {
       phoneNumber = cleanedPhone;
-      console.log(`📞 Telefonnummer wird übertragen: "${phone}" → bereinigt: "${cleanedPhone}"`);
+      console.log(`✅ Telefonnummer wird übertragen: "${phone}" → E.164: "${cleanedPhone}"`);
     } else {
-      console.warn(`⚠️ Telefonnummer ungültig und wird übersprungen: "${phone}" → "${cleanedPhone}"`);
+      console.warn(`⚠️ Telefonnummer ungültig und wird übersprungen:`);
+      console.warn(`   Original: "${phone}"`);
+      console.warn(`   Bereinigt: "${cleanedPhone}"`);
+      console.warn(`   Format OK: ${isValidFormat}`);
+      console.warn(`   Länge OK (12-17): ${isValidLength} (aktuell: ${cleanedPhone.length})`);
     }
   }
 
