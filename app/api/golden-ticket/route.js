@@ -202,7 +202,7 @@ async function trackKlaviyoEvent(profileId, eventName, properties) {
 
 /**
  * Abonniert Profile für Newsletter mit Double-Opt-In
- * Verwendet die Subscription Bulk Create API für Double-Opt-In Flow
+ * Klaviyo sendet automatisch Double-Opt-In Email wenn in Liste aktiviert
  */
 async function subscribeToKlaviyoList(profileId, email) {
   console.log(`📬 Starte Newsletter-Anmeldung für ${email} (Double-Opt-In)`);
@@ -221,7 +221,7 @@ async function subscribeToKlaviyoList(profileId, email) {
                 subscriptions: {
                   email: {
                     marketing: {
-                      consent: 'PENDING_DOUBLE_OPT_IN'  // Trigger Double-Opt-In Email
+                      consent: 'SUBSCRIBED'  // Klaviyo handhabt Double-Opt-In automatisch
                     }
                   }
                 }
