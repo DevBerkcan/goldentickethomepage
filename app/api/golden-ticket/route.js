@@ -1,7 +1,252 @@
-import crypto from "crypto";
-import mailchimp from "@mailchimp/mailchimp_transactional";
+// Klaviyo API Configuration
+const KLAVIYO_API_KEY = process.env.KLAVIYO_API_KEY;
+const KLAVIYO_LIST_ID = process.env.KLAVIYO_MAIN_LIST_ID;
+const KLAVIYO_API_BASE = 'https://a.klaviyo.com/api';
+const KLAVIYO_REVISION = '2024-10-15';
 
-const mandrillClient = mailchimp(process.env.MAILCHIMP_TRANSACTIONAL_API_KEY);
+/**
+ * Erstellt oder aktualisiert ein Klaviyo Profile
+ */
+async function createOrUpdateKlaviyoProfile(data) {
+  const { email, firstName, lastName, phone, ticketCode, street, city, postalCode, country, newsletterConsent } = data;
+
+  // Normalize phone number: E.164 Format für Klaviyo
+  let phoneNumber = '';
+  if (phone && phone.trim()) {
+    // 1. Entferne alle Leerzeichen, Bindestriche, Klammern
+    let cleanedPhone = phone.replace(/[\s\-\(\)]/g, '').trim();
+
+    // 2. Stelle sicher, dass die Nummer mit + beginnt
+    if (!cleanedPhone.startsWith('+')) {
+      // Wenn keine Ländervorwahl, füge +49 für Deutschland hinzu
+      if (cleanedPhone.startsWith('0')) {
+        cleanedPhone = '+49' + cleanedPhone.substring(1);
+      } else if (cleanedPhone.startsWith('49')) {
+        cleanedPhone = '+' + cleanedPhone;
+      } else {
+        cleanedPhone = '+49' + cleanedPhone;
+      }
+    }
+
+    // 3. Nur wenn die Nummer valide aussieht (mindestens 10 Zeichen nach +), speichern
+    if (cleanedPhone.length >= 11 && /^\+\d+$/.test(cleanedPhone)) {
+      phoneNumber = cleanedPhone;
+      console.log(`📞 Telefonnummer wird übertragen: "${phone}" → bereinigt: "${cleanedPhone}"`);
+    } else {
+      console.warn(`⚠️ Telefonnummer ungültig und wird übersprungen: "${phone}" → "${cleanedPhone}"`);
+    }
+  }
+
+  // Build attributes object
+  const attributes = {
+    email: email.toLowerCase().trim(),
+    first_name: firstName || '',
+    last_name: lastName || '',
+  };
+
+  // Telefonnummer nur hinzufügen wenn valide
+  if (phoneNumber) {
+    attributes.phone_number = phoneNumber;
+  }
+
+  // Adresse als Klaviyo location object (Best Practice)
+  if (street || city || postalCode) {
+    attributes.location = {};
+    if (street) attributes.location.address1 = street;
+    if (city) attributes.location.city = city;
+    if (postalCode) attributes.location.zip = postalCode;
+    if (country) attributes.location.country = country || 'DE';
+  }
+
+  // Custom Properties
+  attributes.properties = {
+    ticket_code: ticketCode,
+    rubbellos_redeemed: true,
+    rubbellos_redeemed_at: new Date().toISOString(),
+    website: 'rubbellos.sweetsausallerwelt.de',
+    newsletter_consent: newsletterConsent || false
+  };
+
+  const payload = {
+    data: {
+      type: 'profile',
+      attributes
+    }
+  };
+
+  console.log('📤 Erstelle Klaviyo Profile:', email);
+  console.log('📋 An Klaviyo gesendete Attribute:', JSON.stringify(attributes, null, 2));
+
+  const response = await fetch(`${KLAVIYO_API_BASE}/profiles/`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+      'revision': KLAVIYO_REVISION,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+
+    // Wenn Profile bereits existiert (409 Conflict) - UPDATE statt CREATE
+    if (response.status === 409) {
+      try {
+        const errorData = JSON.parse(errorText);
+        const existingProfileId = errorData.errors?.[0]?.meta?.duplicate_profile_id;
+
+        if (existingProfileId) {
+          console.log('⚠️ Profile existiert bereits, update stattdessen:', existingProfileId);
+          console.log('📋 An Klaviyo gesendete UPDATE-Attribute:', JSON.stringify(attributes, null, 2));
+
+          // UPDATE existierendes Profile
+          const updateResponse = await fetch(`${KLAVIYO_API_BASE}/profiles/${existingProfileId}/`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+              'revision': KLAVIYO_REVISION,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!updateResponse.ok) {
+            const updateErrorText = await updateResponse.text();
+            console.error('❌ Klaviyo Profile Update Error:', updateErrorText);
+            throw new Error(`Klaviyo Profile konnte nicht aktualisiert werden: ${updateResponse.status}`);
+          }
+
+          const updateResult = await updateResponse.json();
+          console.log('✅ Klaviyo Profile aktualisiert:', updateResult.data?.id);
+          return updateResult.data;
+        }
+      } catch (parseError) {
+        console.error('❌ Konnte duplicate_profile_id nicht extrahieren:', parseError);
+      }
+    }
+
+    console.error('❌ Klaviyo Profile Error:', errorText);
+    throw new Error(`Klaviyo Profile konnte nicht erstellt werden: ${response.status}`);
+  }
+
+  const result = await response.json();
+  console.log('✅ Klaviyo Profile erstellt:', result.data?.id);
+  console.log('📥 Klaviyo Response:', JSON.stringify(result.data, null, 2));
+
+  return result.data;
+}
+
+/**
+ * Trackt ein Event in Klaviyo
+ */
+async function trackKlaviyoEvent(profileId, eventName, properties) {
+  const payload = {
+    data: {
+      type: 'event',
+      attributes: {
+        profile: {
+          data: {
+            type: 'profile',
+            id: profileId
+          }
+        },
+        metric: {
+          data: {
+            type: 'metric',
+            attributes: {
+              name: eventName
+            }
+          }
+        },
+        properties: properties,
+        time: new Date().toISOString()
+      }
+    }
+  };
+
+  console.log(`📊 Tracke Event "${eventName}" für Profile ${profileId}`);
+
+  const response = await fetch(`${KLAVIYO_API_BASE}/events/`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+      'revision': KLAVIYO_REVISION,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ Klaviyo Event Error:', response.status, errorText);
+    return null;
+  }
+
+  // Event API gibt 202 Accepted zurück ohne Body
+  if (response.status === 202) {
+    console.log('✅ Event getrackt:', eventName, '(202 Accepted)');
+    return { accepted: true };
+  }
+
+  try {
+    const result = await response.json();
+    console.log('✅ Event getrackt:', eventName);
+    return result;
+  } catch (e) {
+    // Manche Responses haben keinen Body - das ist OK
+    console.log('✅ Event getrackt:', eventName, '(no response body)');
+    return { success: true };
+  }
+}
+
+/**
+ * Fügt Profile zu Klaviyo Liste hinzu (für Newsletter)
+ * Verwendet die Members API für direkte List-Subscription
+ */
+async function subscribeToKlaviyoList(profileId, email) {
+  console.log(`📬 Füge Profile ${profileId} zu Liste ${KLAVIYO_LIST_ID} hinzu`);
+
+  const payload = {
+    data: [
+      {
+        type: 'profile',
+        id: profileId
+      }
+    ]
+  };
+
+  const response = await fetch(`${KLAVIYO_API_BASE}/lists/${KLAVIYO_LIST_ID}/relationships/profiles/`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+      'revision': KLAVIYO_REVISION,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ Klaviyo List Subscription Error:', response.status, errorText);
+    return null;
+  }
+
+  // 204 No Content = Success
+  if (response.status === 204) {
+    console.log('✅ Profile zu Liste hinzugefügt (204 No Content)');
+    return true;
+  }
+
+  try {
+    const result = await response.json();
+    console.log('✅ Profile zu Liste hinzugefügt:', result);
+    return true;
+  } catch (e) {
+    console.log('✅ Profile zu Liste hinzugefügt (no response body)');
+    return true;
+  }
+}
 
 export async function POST(request) {
   try {
@@ -17,17 +262,15 @@ export async function POST(request) {
       city,
       postalCode,
       country = "DE",
-      source = "golden_ticket",
-      offer,
-      utm_source,
-      utm_medium,
-      utm_campaign,
-      consent,
-      consentTs,
-      newsletterConsent = false // Newsletter-Checkbox Status
+      newsletterConsent = false
     } = data;
 
-    // Validierung
+    console.log('\n🎫 === GOLDEN TICKET API START ===');
+    console.log('📧 Email:', email);
+    console.log('🎟️ Code:', ticketCode);
+    console.log('📬 Newsletter Consent:', newsletterConsent);
+
+    // ===== VALIDIERUNG =====
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
       return Response.json(
         { message: "Gültige E-Mail erforderlich" },
@@ -42,410 +285,75 @@ export async function POST(request) {
       );
     }
 
-    // Mailchimp Konfiguration
-    const API_KEY = process.env.MAILCHIMP_API_KEY;
-    const LIST_ID = process.env.MAILCHIMP_AUDIENCE_ID;
+    // ===== KLAVIYO INTEGRATION =====
 
-    if (!API_KEY || !LIST_ID) {
-      console.error("Mailchimp Konfiguration fehlt!");
+    // 1. Klaviyo Profile erstellen/updaten
+    let profile;
+    try {
+      profile = await createOrUpdateKlaviyoProfile({
+        email,
+        firstName,
+        lastName,
+        phone,
+        ticketCode,
+        street,
+        city,
+        postalCode,
+        country,
+        newsletterConsent
+      });
+    } catch (error) {
+      console.error('❌ Klaviyo Profile Fehler:', error);
       return Response.json(
-        { message: "Server-Konfiguration fehlt" },
+        { message: 'Fehler beim Speichern der Daten' },
         { status: 500 }
       );
     }
 
-    const DATACENTER = API_KEY.split("-")[1];
-    const basic = Buffer.from(`anystring:${API_KEY}`).toString("base64");
-    const subscriberHash = crypto.createHash("md5").update(email.toLowerCase()).digest("hex");
-
-    console.log("🔧 Debug Info:");
-    console.log("- API Key Datacenter:", DATACENTER);
-    console.log("- List ID:", LIST_ID);
-    console.log("- Email:", email);
-    console.log("- Subscriber Hash:", subscriberHash);
-
-    // Merge Fields für Mailchimp
-    // Verwende die richtigen Merge Tags basierend auf Ihrer Mailchimp-Konfiguration
-    const merge_fields = {
-      FNAME: firstName || "",
-      LNAME: lastName || "",
-      PHONE: phone || "", // Standard PHONE Feld
-      MMERGE7: phone || "", // PHONE als Text (Merge Tag 7) - Backup
-      MMERGE8: ticketCode || "", // TICKET (Merge Tag 8)
-      MMERGE9: offer || "Adventskalender 2025", // OFFER (Merge Tag 9)
-      MMERGE10: source, // SOURCE (Merge Tag 10)
-    };
-
-    // UTM-Parameter hinzufügen
-    if (utm_source) merge_fields.MMERGE11 = utm_source; // UTM_SOURCE (Merge Tag 11)
-    if (utm_medium) merge_fields.MMERGE12 = utm_medium; // UTM_MEDIUM (Merge Tag 12)
-    if (utm_campaign) merge_fields.MMERGE13 = utm_campaign; // UTM_CAMPAIGN (Merge Tag 13)
-
-    // Adresse MUSS strukturiert sein! (siehe Mailchimp Felder-Konfiguration)
-    if (street || city || postalCode) {
-      // Haupt-ADDRESS Feld (MERGE3) als strukturiertes Objekt
-      merge_fields.ADDRESS = {
-        addr1: street || "",
-        addr2: "",
-        city: city || "",
-        state: "", // Bundesland - für Deutschland meist leer
-        zip: postalCode || "",
-        country: country || "DE"
-      };
-
-      // MMERGE14 (zweites ADDRESS-Feld) auch strukturiert
-      merge_fields.MMERGE14 = {
-        addr1: street || "",
-        addr2: "",
-        city: city || "",
-        state: "",
-        zip: postalCode || "",
-        country: country || "DE"
-      };
-    }
-
-    const memberUrl = `https://${DATACENTER}.api.mailchimp.com/3.0/lists/${LIST_ID}/members/${subscriberHash}`;
-
-    console.log("🌐 Mailchimp URL:", memberUrl);
-    console.log("📦 Merge Fields:", JSON.stringify(merge_fields, null, 2));
-
-    // Teilnehmer in Mailchimp speichern
-    // Status: "subscribed" damit sie in der Zielgruppe sichtbar sind
-    // Tags unterscheiden zwischen Gewinnspiel-Teilnehmern und Newsletter-Abonnenten
-    const requestBody = {
-      email_address: email,
-      status_if_new: "subscribed",
-      status: "subscribed", // WICHTIG: Reaktiviert auch archivierte Kontakte!
-      merge_fields
-    };
-
-    console.log("📤 Request Body:", JSON.stringify(requestBody, null, 2));
-
-    const upsertResponse = await fetch(memberUrl, {
-      method: "PUT",
-      headers: {
-        Authorization: `Basic ${basic}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(requestBody)
-    });
-
-    const upsertText = await upsertResponse.text();
-    let mcData = null;
+    // 2. Event tracken: "Rubbellos Redeemed"
     try {
-      mcData = upsertText ? JSON.parse(upsertText) : {};
-    } catch (e) {
-      console.error("Mailchimp Response Parse Error:", e);
-    }
-
-    console.log("📧 Mailchimp Response Status:", upsertResponse.status);
-    console.log("📧 Mailchimp Response Data:", mcData);
-
-    if (!upsertResponse.ok) {
-      console.error("❌ Mailchimp Error:", mcData || upsertText);
-      return Response.json(
-        { message: "Fehler bei der Speicherung in Mailchimp", details: mcData },
-        { status: 400 }
-      );
-    }
-
-    // NUR die wichtigsten Tags - aufgeräumt!
-    const tags = [
-      { name: "goldenticket", status: "active" } // HAUPTTAG für diese Seite
-    ];
-
-    // Newsletter-Opt-In Status als Tag speichern
-    if (newsletterConsent) {
-      tags.push({ name: "newsletter-opt-in-pending", status: "active" });
-    }
-
-    // Tags zu Mailchimp hinzufügen
-    const tagsResponse = await fetch(`${memberUrl}/tags`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${basic}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ tags })
-    });
-
-    if (!tagsResponse.ok) {
-      console.error("Tags konnten nicht hinzugefügt werden:", await tagsResponse.text());
-    }
-
-    // Adresse als NOTE speichern (da Merge Fields nicht funktionieren)
-    if (street || city || postalCode || phone) {
-      const noteText = `
-📍 Adresse: ${street || '-'}, ${postalCode || '-'} ${city || '-'}${country && country !== 'DE' ? ', ' + country : ''}
-📞 Telefon: ${phone || '-'}
-🎫 Ticket-Code: ${ticketCode}
-📅 Teilnahme: ${new Date().toLocaleString('de-DE')}
-      `.trim();
-
-      try {
-        await fetch(`${memberUrl}/notes`, {
-          method: "POST",
-          headers: {
-            Authorization: `Basic ${basic}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            note: noteText
-          })
-        });
-        console.log("✅ Adresse als Note gespeichert");
-      } catch (noteError) {
-        console.error("⚠️ Note konnte nicht gespeichert werden:", noteError);
-      }
-    }
-
-    console.log("✅ Golden Ticket Teilnahme in Mailchimp gespeichert:", {
-      email,
-      ticketCode,
-      tags: tags.map(t => t.name)
-    });
-
-    // EMAILS VERSENDEN via Mailchimp Transactional (Mandrill)
-    // ZWEI separate Emails!
-    try {
-      console.log("📧 Starte Email-Versand...");
-      console.log("📧 Mailchimp Transactional API Key vorhanden?", !!process.env.MAILCHIMP_TRANSACTIONAL_API_KEY);
-      console.log("📧 Newsletter Consent:", newsletterConsent);
-
-      // EMAIL 1: Gewinnspiel-Bestätigung (IMMER senden)
-      console.log("📧 Sende Email 1: Gewinnspiel-Bestätigung an", email);
-
-      const result1 = await mandrillClient.messages.send({
-        message: {
-          from_email: "noreply@sweetsausallerwelt.de",
-          from_name: "Sweets aus aller Welt",
-          to: [{ email, name: `${firstName} ${lastName}`.trim() || email }],
-          subject: "🎫 Du bist jetzt im Lostopf!",
-          html: `
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <meta charset="utf-8">
-                <style>
-                  body {
-                    font-family: system-ui, -apple-system, sans-serif;
-                    line-height: 1.6;
-                    color: #723a2b;
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                  }
-                  .container {
-                    background: linear-gradient(135deg, #f8ab14 0%, #16b9da 100%);
-                    padding: 40px;
-                    border-radius: 20px;
-                  }
-                  .content {
-                    background: white;
-                    padding: 30px;
-                    border-radius: 15px;
-                  }
-                  h1 {
-                    color: #f8ab14;
-                    margin-top: 0;
-                  }
-                  .ticket-code {
-                    background: #fff8e1;
-                    border-left: 4px solid #f8ab14;
-                    padding: 15px;
-                    margin: 20px 0;
-                    font-size: 20px;
-                    font-weight: bold;
-                    text-align: center;
-                    letter-spacing: 3px;
-                  }
-                  .highlight {
-                    background: #e8f5e9;
-                    border-left: 4px solid #16b9da;
-                    padding: 15px;
-                    margin: 20px 0;
-                  }
-                  .footer {
-                    margin-top: 30px;
-                    padding-top: 20px;
-                    border-top: 1px solid #dddddd;
-                    font-size: 12px;
-                    color: #666;
-                  }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <div class="content">
-                    <h1>🎫 Glückwunsch ${firstName || ''}!</h1>
-
-                    <p>Deine Teilnahme am <strong>Golden Ticket Gewinnspiel</strong> wurde erfolgreich registriert!</p>
-
-                    <div class="ticket-code">
-                      ${ticketCode}
-                    </div>
-
-                    <div class="highlight">
-                      <strong>🎉 Du bist jetzt im Lostopf!</strong><br>
-                      Wir benachrichtigen dich per Email, wenn du gewonnen hast.
-                    </div>
-
-                    <p><strong>Was passiert jetzt?</strong></p>
-                    <ul>
-                      <li>✅ Deine Teilnahme ist gespeichert</li>
-                      <li>🎁 Wir ziehen die Gewinner und informieren dich per Email</li>
-                      <li>🍬 Viel Glück!</li>
-                    </ul>
-
-                    <p>Vielen Dank für deine Teilnahme und viel Erfolg! 🎉</p>
-
-                    <div class="footer">
-                      <p>© ${new Date().getFullYear()} Sweets aus aller Welt<br>
-                      <a href="https://sweetsausallerwelt.de">sweetsausallerwelt.de</a></p>
-                    </div>
-                  </div>
-                </div>
-              </body>
-            </html>
-          `
-        }
+      await trackKlaviyoEvent(profile.id, 'Rubbellos Redeemed', {
+        ticket_code: ticketCode,
+        website: 'rubbellos.sweetsausallerwelt.de',
+        has_address: !!(street && city && postalCode),
+        newsletter_consent: newsletterConsent
       });
-
-      console.log("✅ Email 1 Result:", JSON.stringify(result1, null, 2));
-      console.log("✅ Gewinnspiel-Bestätigungsmail versendet an:", email);
-
-      // EMAIL 2: Newsletter Double-Opt-In (NUR wenn Checkbox aktiviert)
-      if (newsletterConsent) {
-        console.log("📧 Sende Email 2: Newsletter-DOI an", email);
-        const confirmationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/newsletter/confirm?email=${encodeURIComponent(email)}&token=${Buffer.from(email).toString('base64')}`;
-
-        const result2 = await mandrillClient.messages.send({
-          message: {
-            from_email: "noreply@sweetsausallerwelt.de",
-            from_name: "Sweets aus aller Welt",
-            to: [{ email, name: `${firstName} ${lastName}`.trim() || email }],
-            subject: "📬 Bestätige deine Newsletter-Anmeldung",
-            html: `
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <meta charset="utf-8">
-                  <style>
-                    body {
-                      font-family: system-ui, -apple-system, sans-serif;
-                      line-height: 1.6;
-                      color: #723a2b;
-                      max-width: 600px;
-                      margin: 0 auto;
-                      padding: 20px;
-                    }
-                    .container {
-                      background: linear-gradient(135deg, #f8ab14 0%, #16b9da 100%);
-                      padding: 40px;
-                      border-radius: 20px;
-                    }
-                    .content {
-                      background: white;
-                      padding: 30px;
-                      border-radius: 15px;
-                    }
-                    h1 {
-                      color: #f8ab14;
-                      margin-top: 0;
-                    }
-                    .button {
-                      display: inline-block;
-                      padding: 15px 30px;
-                      background: #f8ab14;
-                      color: white !important;
-                      text-decoration: none;
-                      border-radius: 10px;
-                      font-weight: bold;
-                      margin: 20px 0;
-                    }
-                    .button:hover {
-                      background: #16b9da;
-                    }
-                    .warning {
-                      background: #fff8e1;
-                      border-left: 4px solid #dc2626;
-                      padding: 15px;
-                      margin: 20px 0;
-                    }
-                    .footer {
-                      margin-top: 30px;
-                      padding-top: 20px;
-                      border-top: 1px solid #dddddd;
-                      font-size: 12px;
-                      color: #666;
-                    }
-                  </style>
-                </head>
-                <body>
-                  <div class="container">
-                    <div class="content">
-                      <h1>📬 Bestätige deine Newsletter-Anmeldung</h1>
-
-                      <p>Hallo ${firstName || 'lieber Kunde'},</p>
-
-                      <p>vielen Dank für deine Anmeldung zu unserem Newsletter! Um deine Anmeldung abzuschließen, bestätige bitte deine Email-Adresse:</p>
-
-                      <center>
-                        <a href="${confirmationUrl}" class="button">
-                          ✓ Jetzt Newsletter aktivieren
-                        </a>
-                      </center>
-
-                      <div class="warning">
-                        <strong>⚠️ Wichtig:</strong> Falls diese Email in deinem <strong>SPAM-Ordner</strong> gelandet ist, markiere sie bitte als "Kein Spam" und füge unsere Adresse zu deinen Kontakten hinzu.
-                      </div>
-
-                      <p>Nach der Bestätigung erhältst du regelmäßig:</p>
-                      <ul>
-                        <li>🍬 Leckere Neuigkeiten aus aller Welt</li>
-                        <li>🎁 Exklusive Angebote</li>
-                        <li>✨ Besondere Aktionen</li>
-                      </ul>
-
-                      <div class="footer">
-                        <p>Falls du dich nicht angemeldet hast, kannst du diese Email ignorieren.</p>
-                        <p>© ${new Date().getFullYear()} Sweets aus aller Welt<br>
-                        <a href="https://sweetsausallerwelt.de">sweetsausallerwelt.de</a></p>
-                      </div>
-                    </div>
-                  </div>
-                </body>
-              </html>
-            `
-          }
-        });
-
-        console.log("✅ Email 2 Result:", JSON.stringify(result2, null, 2));
-        console.log("✅ Newsletter-DOI-Email versendet an:", email);
-      }
-
-    } catch (emailError) {
-      console.error("❌ EMAIL-VERSAND FEHLGESCHLAGEN:", emailError);
-      console.error("❌ Error Message:", emailError.message);
-      console.error("❌ Error Stack:", emailError.stack);
-      if (emailError.response) {
-        console.error("❌ Mailchimp Response:", emailError.response.body);
-      }
-      // Fehler nicht durchreichen - Teilnahme ist erfolgreich gespeichert
+    } catch (error) {
+      console.warn('⚠️ Event konnte nicht getrackt werden:', error.message);
     }
 
+    // 3. Zu Newsletter-Liste hinzufügen (nur wenn Consent)
+    if (newsletterConsent) {
+      try {
+        const subscribed = await subscribeToKlaviyoList(profile.id, email);
+        if (!subscribed) {
+          console.warn('⚠️ Newsletter-Subscription fehlgeschlagen - siehe Fehler oben');
+        }
+      } catch (error) {
+        console.warn('⚠️ Newsletter-Subscription Exception:', error.message);
+      }
+    }
+
+    console.log('🎫 === GOLDEN TICKET API ENDE ===\n');
+
+    // ===== SUCCESS RESPONSE =====
+    // Emails werden über Klaviyo Flows gesendet (siehe unten für Setup)
     return Response.json({
       success: true,
       message: "Teilnahme erfolgreich registriert",
       ticketCode,
       email,
-      mailchimp_status: "saved"
+      klaviyo_profile_id: profile.id,
+      newsletter_subscribed: newsletterConsent
     });
 
   } catch (error) {
-    console.error("Golden Ticket API Error:", error);
+    console.error('❌ Golden Ticket API Error:', error);
     return Response.json(
-      { message: "Interner Server-Fehler", error: error.message },
+      {
+        message: "Interner Server-Fehler",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }
