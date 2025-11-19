@@ -76,7 +76,7 @@ async function createOrUpdateKlaviyoProfile(data) {
     ticket_code: ticketCode,
     rubbellos_redeemed: true,
     rubbellos_redeemed_at: new Date().toISOString(),
-    website: 'rubbellos.sweetsausallerwelt.de',
+    website: 'goldenticket.sweetsausallerwelt.de',
     newsletter_consent: newsletterConsent || false
   };
 
@@ -389,7 +389,7 @@ export async function POST(request) {
     try {
       await trackKlaviyoEvent(profile.id, 'Rubbellos Redeemed', {
         ticket_code: ticketCode,
-        website: 'rubbellos.sweetsausallerwelt.de',
+        website: 'goldenticket.sweetsausallerwelt.de',
         has_address: !!(street && city && postalCode),
         newsletter_consent: newsletterConsent
       });
