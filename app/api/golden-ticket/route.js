@@ -103,42 +103,79 @@ async function createOrUpdateKlaviyoProfile(data) {
   if (!response.ok) {
     const errorText = await response.text();
 
-    // Wenn Profile bereits existiert (409 Conflict) - UPDATE statt CREATE
+    // 409 Conflict = Profile existiert bereits → Code zum Array hinzufügen
     if (response.status === 409) {
+      console.log('ℹ️ Profile existiert bereits (409) - füge Code zum Array hinzu');
+
       try {
         const errorData = JSON.parse(errorText);
         const existingProfileId = errorData.errors?.[0]?.meta?.duplicate_profile_id;
 
         if (existingProfileId) {
-          console.log('⚠️ Profile existiert bereits, update stattdessen:', existingProfileId);
-          console.log('📋 An Klaviyo gesendete UPDATE-Attribute:', JSON.stringify(attributes, null, 2));
+          console.log('📥 Hole existierendes Profile:', existingProfileId);
 
-          // UPDATE existierendes Profile
-          const updateResponse = await fetch(`${KLAVIYO_API_BASE}/profiles/${existingProfileId}/`, {
-            method: 'PATCH',
+          // 1. Hole das existierende Profile
+          const getResponse = await fetch(`${KLAVIYO_API_BASE}/profiles/${existingProfileId}/?additional-fields[profile]=properties`, {
+            method: 'GET',
             headers: {
               'Authorization': `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
-              'revision': KLAVIYO_REVISION,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
+              'revision': KLAVIYO_REVISION
+            }
           });
 
-          if (!updateResponse.ok) {
-            const updateErrorText = await updateResponse.text();
-            console.error('❌ Klaviyo Profile Update Error:', updateErrorText);
-            throw new Error(`Klaviyo Profile konnte nicht aktualisiert werden: ${updateResponse.status}`);
-          }
+          if (getResponse.ok) {
+            const existingProfile = await getResponse.json();
+            const existingTicketCode = existingProfile.data?.attributes?.properties?.ticket_code;
 
-          const updateResult = await updateResponse.json();
-          console.log('✅ Klaviyo Profile aktualisiert:', updateResult.data?.id);
-          return updateResult.data;
+            console.log('📋 Existierender ticket_code:', existingTicketCode);
+
+            // 2. Erstelle Array mit alten + neuen Codes
+            let ticketCodes = [];
+            if (Array.isArray(existingTicketCode)) {
+              // Bereits ein Array → neuen Code hinzufügen
+              ticketCodes = [...existingTicketCode, ticketCode];
+            } else if (existingTicketCode) {
+              // Einzelner Wert → in Array konvertieren
+              ticketCodes = [existingTicketCode, ticketCode];
+            } else {
+              // Kein Wert vorhanden → neues Array
+              ticketCodes = [ticketCode];
+            }
+
+            // Duplikate entfernen
+            ticketCodes = [...new Set(ticketCodes)];
+            console.log('📝 Neue ticket_codes:', ticketCodes);
+
+            // 3. Update attributes mit Code-Array
+            attributes.properties.ticket_code = ticketCodes;
+
+            // 4. UPDATE existierendes Profile
+            const updateResponse = await fetch(`${KLAVIYO_API_BASE}/profiles/${existingProfileId}/`, {
+              method: 'PATCH',
+              headers: {
+                'Authorization': `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+                'revision': KLAVIYO_REVISION,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (updateResponse.ok) {
+              const updateResult = await updateResponse.json();
+              console.log('✅ Profile aktualisiert mit Code-Array:', updateResult.data?.id);
+              return updateResult.data;
+            }
+          }
         }
       } catch (parseError) {
-        console.error('❌ Konnte duplicate_profile_id nicht extrahieren:', parseError);
+        console.error('❌ Fehler beim Profile-Update:', parseError);
       }
+
+      // Fallback: Gib existierendes Profile zurück
+      return { id: 'existing-profile', email: email.toLowerCase().trim() };
     }
 
+    // Alle anderen Fehler werfen
     console.error('❌ Klaviyo Profile Error:', errorText);
     throw new Error(`Klaviyo Profile konnte nicht erstellt werden: ${response.status}`);
   }
@@ -360,16 +397,14 @@ export async function POST(request) {
       console.warn('⚠️ Event konnte nicht getrackt werden:', error.message);
     }
 
-    // 3. Zu Newsletter-Liste hinzufügen (nur wenn Consent)
-    if (newsletterConsent) {
-      try {
-        const subscribed = await subscribeToKlaviyoList(profile.id, email);
-        if (!subscribed) {
-          console.warn('⚠️ Newsletter-Subscription fehlgeschlagen - siehe Fehler oben');
-        }
-      } catch (error) {
-        console.warn('⚠️ Newsletter-Subscription Exception:', error.message);
+    // 3. IMMER zur Liste hinzufügen (egal ob Newsletter-Consent oder nur Teilnahmebedingungen)
+    try {
+      const subscribed = await subscribeToKlaviyoList(profile.id, email);
+      if (!subscribed) {
+        console.warn('⚠️ Newsletter-Subscription fehlgeschlagen - siehe Fehler oben');
       }
+    } catch (error) {
+      console.warn('⚠️ Newsletter-Subscription Exception:', error.message);
     }
 
     console.log('🎫 === GOLDEN TICKET API ENDE ===\n');
