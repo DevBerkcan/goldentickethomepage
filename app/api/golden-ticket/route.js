@@ -74,8 +74,8 @@ async function createOrUpdateKlaviyoProfile(data) {
   // Custom Properties
   attributes.properties = {
     ticket_code: ticketCode,
-    rubbellos_redeemed: true,
-    rubbellos_redeemed_at: new Date().toISOString(),
+    goldenticket_redeemed: true,
+    goldenticket_redeemed_at: new Date().toISOString(),
     website: 'goldenticket.sweetsausallerwelt.de',
     newsletter_consent: newsletterConsent || false
   };
@@ -261,7 +261,7 @@ async function subscribeToKlaviyoList(profileId, email) {
     data: {
       type: 'profile-subscription-bulk-create-job',
       attributes: {
-        custom_source: 'Rubbellos Website',
+        custom_source: 'goldenticket Website',
         profiles: {
           data: [
             {
@@ -385,9 +385,9 @@ export async function POST(request) {
       );
     }
 
-    // 2. Event tracken: "Rubbellos Redeemed"
+    // 2. Event tracken: "GoldenTicket Redeemed"
     try {
-      await trackKlaviyoEvent(profile.id, 'Rubbellos Redeemed', {
+      await trackKlaviyoEvent(profile.id, 'GoldenTicket Redeemed', {
         ticket_code: ticketCode,
         website: 'goldenticket.sweetsausallerwelt.de',
         has_address: !!(street && city && postalCode),
